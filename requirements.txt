@@ -1,0 +1,9 @@
+Django==4.2
+djangorestframework==3.14
+psycopg2-binary==2.9.9
+python-decouple==3.8
+gunicorn==21.2.0
+pydantic==2.5
+celery==5.3.6
+uvicorn==0.22.0
+gunicorn[uvicorn]==21.2.0
