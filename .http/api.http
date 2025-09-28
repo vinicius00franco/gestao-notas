@@ -1,0 +1,45 @@
+### API requests for Gestão de Notas
+# Base URL variable
+# Usage: change {{base_url}} to http://localhost:8000 (ou seu host)
+
+@base_url = http://localhost:8000
+
+### Processar nota fiscal (arquivo multipart)
+### Envia arquivo (campo `arquivo`) e `meu_cnpj` como form-data
+POST {{base_url}}/api/processar-nota/ HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="meu_cnpj"
+
+12345678000199
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="arquivo"; filename="exemplo.xml"
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Exemplo simplificado de nota fiscal -->
+<nota>
+  <identificacao>
+    <chave>00000000000000000000000000000000000000000000</chave>
+  </identificacao>
+  <emitente>
+    <cnpj>11222333000181</cnpj>
+    <nome>Empresa Exemplo</nome>
+  </emitente>
+  <valor>123.45</valor>
+</nota>
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Obter status do job
+### Retorna status de processamento e possivelmente resultados
+GET {{base_url}}/api/jobs/1/ HTTP/1.1
+
+### Contas a pagar
+GET {{base_url}}/api/contas-a-pagar/ HTTP/1.1
+
+### Contas a receber
+GET {{base_url}}/api/contas-a-receber/ HTTP/1.1
+
+### Dashboard (estatísticas)
+GET {{base_url}}/api/dashboard/ HTTP/1.1

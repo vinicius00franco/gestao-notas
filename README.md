@@ -79,3 +79,18 @@ Com isso, uma chamada para `/api/v15/contas-a-pagar/` será internamente reescri
 
 Use isso quando quiser descontinuar mudanças entre versões intermediárias e apontar vários sub-versions para uma versão principal sem alterar clientes.
 # gestao-notas
+
+## Arquivos de requisição (.http)
+
+Incluí um arquivo de requisições HTTP para testar a API rapidamente em `/.http/api.http`.
+
+- Abra `./.http/api.http` no VS Code (ou outro editor que suporte arquivos `.http`).
+- Ajuste a variável `@base_url` no topo do arquivo para apontar sua API (ex.: `http://localhost:8000`).
+- Ele contém exemplos para:
+	- POST `/api/processar-nota/` (multipart/form-data com `arquivo` e `meu_cnpj`)
+	- GET `/api/jobs/<id>/`
+	- GET `/api/contas-a-pagar/`
+	- GET `/api/contas-a-receber/`
+	- GET `/api/dashboard/`
+
+Use essas requisições para validar endpoints locais ou em containers (por exemplo, quando o projeto estiver subido via Docker Compose).
