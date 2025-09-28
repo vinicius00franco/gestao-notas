@@ -5,9 +5,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('apps.processamento.urls')),
-    path('api/v1/', include('apps.financeiro.urls')),
-    path('api/v1/', include('apps.dashboard.urls')),
+    path('api/', include('apps.processamento.urls')),
+    path('api/', include('apps.financeiro.urls')),
+    path('api/', include('apps.dashboard.urls')),
 ]
 
 # Servir arquivos de media em ambiente de desenvolvimento

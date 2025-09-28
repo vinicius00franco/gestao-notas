@@ -26,17 +26,11 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'backend.middleware.ApiVersionFallbackMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-# API version fallback mapping (list of {"range": (min,max), "target": X})
-API_VERSION_FALLBACKS = [
-    {"range": (10, 20), "target": 10},
 ]
 
 ROOT_URLCONF = 'backend.urls'
