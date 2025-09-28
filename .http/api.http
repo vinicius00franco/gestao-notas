@@ -35,6 +35,26 @@ Content-Type: application/xml
 ### Retorna status de processamento e possivelmente resultados
 GET {{base_url}}/api/jobs/1/ HTTP/1.1
 
+### Exemplo de resposta (202) para POST /api/processar-nota/
+HTTP/1.1 202 Accepted
+Content-Type: application/json
+
+{
+  "id": 1,
+  "status": {"codigo": "PENDENTE", "descricao": "Pendente"}
+}
+
+### Exemplo de resposta (200) para GET /api/jobs/1/
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": 1,
+  "status": {"codigo": "CONCLUIDO", "descricao": "Concluído"},
+  "mensagem_erro": null,
+  "dt_conclusao": "2025-09-28T12:34:56Z"
+}
+
 ### Contas a pagar
 GET {{base_url}}/api/contas-a-pagar/ HTTP/1.1
 

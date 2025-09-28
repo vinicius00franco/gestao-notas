@@ -65,6 +65,25 @@ O worker é iniciado pelo serviço `worker` do docker-compose. As tarefas são e
 - Em produção, configurar DEBUG=False, allowed hosts e secrets seguros.
 - Ajuste os valores do `.env` para seu ambiente.
 
+## Mudança: IDs internos x UUIDs públicos
+
+Para aumentar a segurança e evitar exposição direta de IDs numéricos, os modelos principais agora possuem um campo `uuid` (coluna `_uuid`) que é retornado nas respostas públicas da API. Internamente o banco continua a usar o campo `id` (numérico) como PK e chave para relações, mas os endpoints REST expõem `uuid` em vez de `id`.
+
+O fluxo recomendado para atualizar sua base:
+
+1. Certifique-se de ter um backup do banco.
+2. Aplique as migrações:
+
+```bash
+python manage.py migrate
+```
+
+3. As migrações adicionam campos `*_uuid` com valores gerados automaticamente para registros existentes.
+
+4. As rotas públicas agora aceitam e retornam UUIDs onde aplicável (por exemplo `/api/jobs/<uuid>/`).
+
+Se precisar de um script para mapear IDs antigos para UUIDs em integrações terceiras, podemos adicionar uma rotina específica.
+
 ## Version fallback (roteamento de versões)
 
 Este projeto inclui um middleware (`backend.middleware.ApiVersionFallbackMiddleware`) que permite redirecionar internamente chamadas de versões dentro de um intervalo para uma versão alvo.

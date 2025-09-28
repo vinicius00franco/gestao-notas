@@ -1,0 +1,101 @@
+@startuml models_diagram_debug_version
+' Diagrama de Modelos - Versao de Depuracao
+skinparam linetype ortho
+
+' ===================================
+' Modulo Principal
+' ===================================
+
+entity "geral_classificadores" as clf {
+  * clf_id : int
+  --
+  clf_tipo : varchar(50)
+  clf_codigo : varchar(50)
+  clf_descricao : varchar(255)
+}
+
+entity "cadastro_empresas" as emp {
+  * emp_id : int
+  --
+  emp_nome : varchar(255)
+  emp_cnpj : varchar(18)
+  .. Auditoria ..
+  emp_dt_exclusao : timestamptz
+}
+
+entity "cadastro_parceiros" as pcr {
+  * pcr_id : int
+  --
+  # clf_id_tipo : int
+  pcr_nome : varchar(255)
+  pcr_cnpj : varchar(18)
+  .. Auditoria ..
+  pcr_dt_exclusao : timestamptz
+}
+
+entity "movimento_jobs_processamento" as jbp {
+  * jbp_id : int
+  --
+  # emp_id : int
+  # clf_id_status : int
+  jbp_arquivo_original : varchar(255)
+}
+
+entity "movimento_notas_fiscais" as ntf {
+  * ntf_id : int
+  --
+  # jbp_id : int
+  # pcr_id : int
+  ntf_numero : varchar(100)
+  ntf_valor_total : numeric(12,2)
+}
+
+' ===================================
+' Modulo de Consumo de IA
+' ===================================
+
+entity "catalogo_modelos_ia" as mia {
+  * mia_id : int
+  --
+  mia_nome_provedor : varchar(100)
+  mia_identificador_modelo : varchar(100)
+  .. Precificacao ..
+  mia_preco_milhao_tokens_entrada : numeric(10,4)
+  mia_preco_milhao_tokens_saida : numeric(10,4)
+  .. Auditoria ..
+  mia_dt_exclusao : timestamptz
+}
+
+entity "movimento_uso_api_ia" as uai {
+  * uai_id : bigint
+  --
+  # jbp_id : int
+  # mia_id : int
+  .. Metricas de Token ..
+  uai_tokens_entrada : int
+  uai_tokens_saida : int
+  uai_tokens_total : int
+  .. Custo e Tentativa ..
+  uai_custo_calculado_usd : numeric(12,6)
+  uai_numero_tentativa : smallint
+  .. Status da Chamada ..
+  uai_timestamp_inicio_req : timestamptz
+  uai_timestamp_fim_req : timestamptz
+  uai_sucesso : boolean
+  uai_erro_mensagem : text
+}
+
+' ===================================
+' Relacionamentos
+' ===================================
+emp ||--|{ jbp
+pcr ||--o{ ntf
+jbp ||--|{ ntf
+
+clf ||--|{ pcr
+clf ||--|{ jbp
+
+jbp ||--|{ uai
+mia ||--|{ uai
+
+@enduml

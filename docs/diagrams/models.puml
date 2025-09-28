@@ -1,0 +1,162 @@
+@startuml models_diagram_consolidated
+' Diagrama de Modelos Consolidado
+skinparam linetype ortho
+
+' ===================================
+' Tabela de Domínio Generalizada
+' ===================================
+entity "geral_classificadores" as clf {
+  * clf_id : int (PK)
+  --
+  clf_tipo : varchar(50) ' Ex: 'STATUS_JOB', 'TIPO_PARCEIRO', 'TIPO_LANCAMENTO'
+  clf_codigo : varchar(50) ' Ex: 'CONCLUIDO', 'CLIENTE', 'RECEITA'
+  clf_descricao : varchar(255)
+  --
+  UNIQUE(clf_tipo, clf_codigo)
+}
+
+' ===================================
+' Tabelas de Cadastro / Mestre
+' ===================================
+entity "cadastro_empresas" as emp {
+  * emp_id : int (PK)
+  --
+  emp_nome : varchar(255)
+  emp_cnpj : varchar(18) {unique}
+  .. Auditoria ..
+  emp_dt_criacao : timestamptz
+  emp_dt_alteracao : timestamptz
+  emp_usr_criacao : int
+  emp_usr_alteracao : int
+  emp_dt_exclusao : timestamptz
+}
+
+entity "cadastro_parceiros" as pcr {
+  * pcr_id : int (PK)
+  --
+  # clf_id_tipo : int (FK) -> aponta para clf(TIPO_PARCEIRO)
+  pcr_nome : varchar(255)
+  pcr_cnpj : varchar(18) {unique}
+  .. Auditoria ..
+  pcr_dt_criacao : timestamptz
+  pcr_dt_alteracao : timestamptz
+  pcr_usr_criacao : int
+  pcr_usr_alteracao : int
+  pcr_dt_exclusao : timestamptz
+}
+
+' ===================================
+' Tabelas de Movimento / Transacionais
+' ===================================
+entity "movimento_jobs_processamento" as jbp {
+  * jbp_id : int (PK)
+  --
+  # emp_id : int (FK)
+  # clf_id_status : int (FK) -> aponta para clf(STATUS_JOB)
+  jbp_arquivo_original : varchar(255)
+  jbp_mensagem_erro : text
+  .. Auditoria ..
+  jbp_dt_criacao : timestamptz
+  jbp_dt_alteracao : timestamptz
+  jbp_usr_criacao : int
+  jbp_usr_alteracao : int
+}
+
+entity "movimento_notas_fiscais" as ntf {
+  * ntf_id : int (PK)
+  --
+  # jbp_id : int (FK)
+  # pcr_id : int (FK)
+  ntf_numero : varchar(100)
+  ntf_data_emissao : date
+  ntf_valor_total : numeric(12,2) ' Soma dos itens
+  .. Auditoria ..
+  ntf_dt_criacao : timestamptz
+  ntf_dt_alteracao : timestamptz
+  ntf_usr_criacao : int
+  ntf_usr_alteracao : int
+}
+
+entity "movimento_nota_fiscal_itens" as nfi {
+  * nfi_id : int (PK)
+  --
+  # ntf_id : int (FK)
+  nfi_descricao : varchar(255)
+  nfi_quantidade : numeric(10,3)
+  nfi_valor_unitario : numeric(10,2)
+  nfi_valor_total : numeric(12,2)
+}
+
+entity "movimento_lancamentos_financeiros" as lcf {
+  * lcf_id : int (PK)
+  --
+  # ntf_id : int (FK)
+  # clf_id_tipo : int (FK) -> aponta para clf(TIPO_LANCAMENTO)
+  # clf_id_status : int (FK) -> aponta para clf(STATUS_LANCAMENTO)
+  lcf_descricao : varchar(255)
+  lcf_valor : numeric(10,2)
+  lcf_data_vencimento : date
+  lcf_data_pagamento : date
+  .. Auditoria ..
+  lcf_dt_criacao : timestamptz
+  lcf_dt_alteracao : timestamptz
+  lcf_usr_criacao : int
+  lcf_usr_alteracao : int
+}
+
+' ===================================
+' Modulo de Consumo de IA
+' ===================================
+entity "catalogo_modelos_ia" as mia {
+  * mia_id : int (PK)
+  --
+  mia_nome_provedor : varchar(100)
+  mia_identificador_modelo : varchar(100)
+  .. Precificacao ..
+  mia_preco_milhao_tokens_entrada : numeric(10,4)
+  mia_preco_milhao_tokens_saida : numeric(10,4)
+  .. Auditoria ..
+  mia_dt_exclusao : timestamptz
+}
+
+entity "movimento_uso_api_ia" as uai {
+  * uai_id : bigint (PK)
+  --
+  # jbp_id : int (FK)
+  # mia_id : int (FK)
+  .. Metricas de Token ..
+  uai_tokens_entrada : int
+  uai_tokens_saida : int
+  uai_tokens_total : int
+  .. Custo e Tentativa ..
+  uai_custo_calculado_usd : numeric(12,6)
+  uai_numero_tentativa : smallint
+  .. Status da Chamada ..
+  uai_timestamp_inicio_req : timestamptz
+  uai_timestamp_fim_req : timestamptz
+  uai_sucesso : boolean
+  uai_erro_mensagem : text
+}
+
+' ===================================
+' Relacionamentos
+' ===================================
+
+' Relacionamentos principais
+emp ||--|{ jbp
+jbp ||--|{ ntf
+pcr ||--o{ ntf
+ntf ||--|{ nfi
+ntf ||--o{ lcf
+
+' Relacionamentos com a tabela de classificadores
+clf <. pcr::clf_id_tipo
+clf <. jbp::clf_id_status
+clf <. lcf::clf_id_tipo
+clf <. lcf::clf_id_status
+
+' Relacionamentos do módulo de IA
+jbp ||--|{ uai
+mia ||--|{ uai
+
+@enduml

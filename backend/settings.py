@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'apps.notas',
     'apps.financeiro',
     'apps.dashboard',
+    'apps.classificadores',
 ]
 
 MIDDLEWARE = [

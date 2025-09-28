@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from .models import JobProcessamento
 from .serializers import UploadNotaFiscalSerializer, JobProcessamentoSerializer
 from .publishers import CeleryTaskPublisher
+from apps.empresa.models import MinhaEmpresa
+from apps.classificadores.models import get_classifier
 
 class ProcessarNotaFiscalView(views.APIView):
     serializer_class = UploadNotaFiscalSerializer
@@ -11,14 +13,20 @@ class ProcessarNotaFiscalView(views.APIView):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
+        empresa = MinhaEmpresa.objects.get(cnpj=validated_data['meu_cnpj'])
+        status_pendente = get_classifier('STATUS_JOB', 'PENDENTE')
         job = JobProcessamento.objects.create(
             arquivo_original=validated_data['arquivo'],
-            meu_cnpj=validated_data['meu_cnpj']
+            empresa=empresa,
+            status=status_pendente,
         )
         CeleryTaskPublisher().publish_processamento_nota(job_id=job.id)
-        return Response({"id": job.id, "status": job.status}, status=status.HTTP_202_ACCEPTED)
+        return Response({
+            "uuid": str(job.uuid),
+            "status": {"codigo": job.status.codigo, "descricao": job.status.descricao}
+        }, status=status.HTTP_202_ACCEPTED)
 
 class JobStatusView(generics.RetrieveAPIView):
     queryset = JobProcessamento.objects.all()
     serializer_class = JobProcessamentoSerializer
-    lookup_field = 'id'
+    lookup_field = 'uuid'

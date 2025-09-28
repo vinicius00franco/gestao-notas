@@ -1,0 +1,55 @@
+@startuml models_diagram
+' Diagrama de modelos - Gestão de Notas
+entity MinhaEmpresa {
+  * id : int
+  --
+  nome : varchar(255)
+  cnpj : varchar(18) {unique}
+}
+
+entity Parceiro {
+  * id : int
+  --
+  nome : varchar(255)
+  cnpj : varchar(18) {unique}
+  tipo : varchar(10)
+}
+
+entity JobProcessamento {
+  * id : int
+  --
+  arquivo_original : varchar(255)
+  meu_cnpj : varchar(18)
+  status : varchar(12)
+  dt_criacao : timestamptz
+  dt_conclusao : timestamptz
+  mensagem_erro : text
+}
+
+entity NotaFiscal {
+  * id : int
+  --
+  job_origem_id : int
+  parceiro_id : int
+  numero : varchar(100)
+  data_emissao : date
+  valor_total : numeric(10,2)
+}
+
+entity LancamentoFinanceiro {
+  * id : int
+  --
+  nota_fiscal_id : int {unique}
+  descricao : varchar(255)
+  valor : numeric(10,2)
+  tipo : varchar(10)
+  status : varchar(10)
+  data_vencimento : date
+  data_pagamento : date
+}
+
+NotaFiscal }|--|| JobProcessamento : job_origem
+NotaFiscal }o--|| Parceiro : parceiro
+LancamentoFinanceiro }o--|| NotaFiscal : nota_fiscal
+
+@enduml
