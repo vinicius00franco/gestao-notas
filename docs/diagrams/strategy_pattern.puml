@@ -1,0 +1,97 @@
+@startuml Strategy Pattern Implementation
+
+title Diagrama de Classes - Padrão Strategy
+
+package "Estratégias de Extração" as extraction {
+    interface ExtractorInterface {
+        +extract(file_content: bytes, filename: str): InvoiceData
+    }
+
+    class PDFExtractor {
+        +extract(file_content: bytes, filename: str): InvoiceData
+    }
+
+    class XMLExtractor {
+        +extract(file_content: bytes, filename: str): InvoiceData
+    }
+
+    class ImageExtractor {
+        +extract(file_content: bytes, filename: str): InvoiceData
+    }
+
+    class SimulatedExtractor {
+        +extract(file_content: bytes, filename: str): InvoiceData
+    }
+
+    class ExtractorFactory {
+        +{static} get_extractor(filename: str): ExtractorInterface
+    }
+
+    ExtractorInterface <|.. PDFExtractor
+    ExtractorInterface <|.. XMLExtractor
+    ExtractorInterface <|.. ImageExtractor
+    ExtractorInterface <|.. SimulatedExtractor
+
+    ExtractorFactory ..> ExtractorInterface : creates
+}
+
+package "Estratégias Financeiras" as financial {
+    interface TipoLancamentoStrategy {
+        +determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+    }
+
+    class NotaCompraStrategy {
+        +determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+    }
+
+    class NotaVendaStrategy {
+        +determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+    }
+
+    class TipoLancamentoContext {
+        -strategies: List<TipoLancamentoStrategy>
+        +determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+    }
+
+    TipoLancamentoStrategy <|.. NotaCompraStrategy
+    TipoLancamentoStrategy <|.. NotaVendaStrategy
+
+    TipoLancamentoContext o-- TipoLancamentoStrategy : contains
+}
+
+package "Serviços e Dados" as services {
+    class InvoiceData {
+        +numero: str
+        +remetente_cnpj: str
+        +remetente_nome: str
+        +destinatario_cnpj: str
+        +destinatario_nome: str
+        +valor_total: Decimal
+        +data_emissao: date
+        +data_vencimento: date
+    }
+
+    class NotaFiscalService {
+        -extractor: ExtractorInterface
+        -tipo_lancamento_context: TipoLancamentoContext
+        +processar_nota_fiscal_do_job(job: JobProcessamento): LancamentoFinanceiro
+    }
+
+    NotaFiscalService ..> ExtractorInterface : uses
+    NotaFiscalService ..> TipoLancamentoContext : uses
+    NotaFiscalService ..> InvoiceData : creates
+}
+
+' Relacionamentos entre pacotes
+extraction ..> services : provides extractors
+financial ..> services : provides strategies
+
+' Notas explicativas
+note right of ExtractorFactory : Factory Pattern\nSeleciona estratégia\nbaseada na extensão\ndo arquivo
+
+note right of TipoLancamentoContext : Strategy Pattern\nTenta estratégias em ordem\naté encontrar uma que funcione
+
+note bottom of NotaFiscalService : Dependency Injection\nRecebe estratégias via construtor\nou usa factories por padrão
+
+@enduml</content>
+<parameter name="filePath">/home/vinicius/Downloads/estudo/engenharia-software/gestao_notas/docs/diagrams/strategy_pattern.puml
