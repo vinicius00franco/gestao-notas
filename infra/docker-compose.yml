@@ -1,11 +1,10 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:14-alpine
     container_name: postgres_db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./db-init:/docker-entrypoint-initdb.d:ro
     env_file:
       - ../.env.db
     ports:
@@ -25,13 +24,12 @@ services:
       context: ..
       dockerfile: infra/Dockerfile
     container_name: django_api
-    command: gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    command: sh -c "python manage.py migrate --noinput && gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
     volumes:
       - ..:/app
     env_file:
       - ../.env.common
       - ../.env.web
-      - ../.env.db
     depends_on:
       - db
       - rabbitmq
@@ -47,7 +45,6 @@ services:
     env_file:
       - ../.env.common
       - ../.env.web
-      - ../.env.db
     depends_on:
       - web
 

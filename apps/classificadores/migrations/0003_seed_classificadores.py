@@ -32,7 +32,7 @@ def delete_classifiers(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('classificadores', '0001_initial'),
+        ('classificadores', '0002_add_uuid'),
     ]
 
     operations = [
