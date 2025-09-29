@@ -9,7 +9,22 @@ docker compose up --build -d
 ./scripts/start.sh
 ```
 
-Acesse: http://localhost
+Acesse: http://localhost:18080
+
+Se a porta 80 estiver em uso por outros projetos na sua máquina, o compose
+permite sobrescrever a porta do Nginx através da variável de ambiente
+`HOST_NGINX_PORT`. Exemplo para subir em 18080 (evita conflitos):
+
+```bash
+cd infra
+HOST_NGINX_PORT=18080 docker compose up --build -d
+```
+
+O endpoint de health da API estará disponível em:
+
+```
+http://localhost:18080/healthz
+```
 
 ## Dashboard de Logs
 

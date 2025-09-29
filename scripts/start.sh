@@ -66,6 +66,38 @@ wait_for_postgres() {
 wait_for_postgres || true
 
 echo "Aplicando migrations..."
+# If a docker container named 'django_api' is running, prefer executing
+# management commands inside the container. This avoids requiring Django
+# installed on the host when the project is containerized.
+if docker ps --format '{{.Names}}' | grep -q '^django_api$'; then
+  echo "Detected 'django_api' container -> running migrations inside container"
+  docker exec django_api python manage.py migrate --noinput || true
+
+  echo "Attempting collectstatic inside container (may be skipped if not configured)..."
+  docker exec django_api python manage.py collectstatic --noinput || \
+    echo "collectstatic failed or STATIC_ROOT not configured inside container; continuing"
+
+  echo "Django commands executed inside container. The container should be serving the app."
+  echo
+  echo "Ambiente iniciado via containers. Acesse: http://localhost/ (via nginx)"
+  exit 0
+fi
+
+# If we reach here, there is no container; try to run locally but only if Django is
+# available in the current Python environment. Otherwise instruct the user to use
+# Docker or create a virtualenv and install requirements.
+if ! "$PY" -c "import importlib, sys
+try:
+    importlib.import_module('django')
+except Exception:
+    sys.exit(1)
+" >/dev/null 2>&1; then
+  echo "Django não encontrado no ambiente local. Para desenvolvimento local, crie um venv e instale requirements.txt or use Docker Compose:" >&2
+  echo "  python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt" >&2
+  echo "Ou inicie via Docker: cd infra && docker compose up --build -d" >&2
+  exit 1
+fi
+
 "$PY" manage.py migrate --noinput
 
 echo "Coletando static files (opcional em dev)..."

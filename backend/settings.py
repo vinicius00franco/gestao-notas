@@ -83,6 +83,11 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Directory where `collectstatic` will copy static files for production.
+# When running inside the Docker container we need a filesystem path here
+# otherwise Django raises ImproperlyConfigured during collectstatic.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- CELERY SETTINGS ---
