@@ -1,0 +1,324 @@
+# ========================================
+# IMPLEMENTAÇÃO DO OBSERVER PATTERN - API GESTÃO DE NOTAS
+# ========================================
+
+# ========================================
+# ARQUIVO: apps/core/observers.py
+# CLASSES BASE DO OBSERVER PATTERN
+# ========================================
+
+from abc import ABC, abstractmethod
+from typing import Any, List
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class Observer(ABC):
+    @abstractmethod
+    def update(self, subject: Any, event_type: str, **kwargs):
+        """Called when the subject emits an event.
+
+        event_type: a string identifying the event (e.g. 'lancamento_created')
+        kwargs: additional context (models, data)
+        """
+        pass
+
+
+class Subject:
+    def __init__(self):
+        self._observers: List[Observer] = []
+
+    def attach(self, observer: Observer):
+        if observer not in self._observers:
+            self._observers.append(observer)
+
+    def detach(self, observer: Observer):
+        if observer in self._observers:
+            self._observers.remove(observer)
+
+    def notify(self, event_type: str, **kwargs):
+        for observer in list(self._observers):
+            try:
+                observer.update(self, event_type, **kwargs)
+            except Exception as e:
+                logger.exception("Observer error: %s", e)
+
+# ========================================
+# ARQUIVO: apps/financeiro/observers.py
+# OBSERVER PARA ALERTAS DE VENCIMENTO
+# ========================================
+
+from datetime import date, timedelta
+import logging
+
+from apps.core.observers import Observer
+
+logger = logging.getLogger(__name__)
+
+
+class AlertaVencimentoObserver(Observer):
+    """Observer that logs a warning when a financial entry has a near due date."""
+
+    def update(self, subject, event_type: str, **kwargs):
+        if event_type == "lancamento_created":
+            lancamento = kwargs.get("lancamento")
+            if lancamento is not None:
+                self._verificar_vencimento_proximo(lancamento)
+
+    def _verificar_vencimento_proximo(self, lancamento):
+        # número de dias antes do vencimento para emitir alerta
+        dias_alerta = 7
+        data_limite = date.today() + timedelta(days=dias_alerta)
+
+        try:
+            data_venc = lancamento.data_vencimento
+        except Exception:
+            return
+
+        if data_venc and data_venc <= data_limite:
+            logger.warning(
+                "ALERTA: Vencimento próximo - %s vence em %s",
+                getattr(lancamento, "descricao", "<sem descricao>"),
+                data_venc,
+            )
+
+# ========================================
+# ARQUIVO: apps/dashboard/observers.py
+# OBSERVER PARA MÉTRICAS FINANCEIRAS
+# ========================================
+
+import logging
+
+from apps.core.observers import Observer
+from apps.financeiro.models import LancamentoFinanceiro
+
+logger = logging.getLogger(__name__)
+
+
+class MetricasFinanceirasObserver(Observer):
+    """Observer that recalculates simple financial metrics for the dashboard."""
+
+    def update(self, subject, event_type: str, **kwargs):
+        if event_type == "lancamento_created":
+            try:
+                self._atualizar_metricas()
+            except Exception:
+                logger.exception("Erro ao atualizar métricas financeiras")
+
+    def _atualizar_metricas(self):
+        # import Sum locally to avoid static analysis complaining about Django imports at top level
+        from django.db.models import Sum
+
+        total_pagar = (
+            LancamentoFinanceiro.objects.filter(
+                clf_tipo__codigo="PAGAR", clf_status__codigo="PENDENTE"
+            )
+            .aggregate(Sum("valor"))["valor__sum"]
+            or 0
+        )
+
+        total_receber = (
+            LancamentoFinanceiro.objects.filter(
+                clf_tipo__codigo="RECEBER", clf_status__codigo="PENDENTE"
+            )
+            .aggregate(Sum("valor"))["valor__sum"]
+            or 0
+        )
+
+        logger.info("MÉTRICAS: A Pagar: R$%s, A Receber: R$%s", total_pagar, total_receber)
+
+# ========================================
+# ARQUIVO: apps/parceiros/observers.py
+# OBSERVER PARA VALIDAÇÃO DE CNPJ
+# ========================================
+
+import re
+import logging
+
+from apps.core.observers import Observer
+
+logger = logging.getLogger(__name__)
+
+
+class ValidacaoCNPJObserver(Observer):
+    """Observer that validates CNPJ on parceiro create/update events."""
+
+    def update(self, subject, event_type: str, **kwargs):
+        if event_type == "parceiro_created_or_updated":
+            parceiro = kwargs.get("parceiro")
+            if parceiro is not None:
+                self._validar_cnpj(parceiro)
+
+    def _validar_cnpj(self, parceiro):
+        cnpj = getattr(parceiro, "cnpj", "")
+        cnpj_digits = re.sub(r"\D", "", cnpj or "")
+
+        if len(cnpj_digits) != 14:
+            logger.error("CNPJ inválido para %s: %s", getattr(parceiro, "nome", "<sem nome>"), cnpj)
+            return
+
+        try:
+            valido = self._calcular_digito_verificador(cnpj_digits)
+        except Exception:
+            logger.exception("Erro ao validar CNPJ para %s", getattr(parceiro, "nome", "<sem nome>"))
+            return
+
+        if valido:
+            logger.info("CNPJ válido para %s", getattr(parceiro, "nome", "<sem nome>"))
+        else:
+            logger.error("CNPJ inválido para %s: %s", getattr(parceiro, "nome", "<sem nome>"), cnpj)
+
+    def _calcular_digito_verificador(self, cnpj: str) -> bool:
+        def calcular_digito(cnpj_base, pesos):
+            soma = sum(int(cnpj_base[i]) * pesos[i] for i in range(len(pesos)))
+            resto = soma % 11
+            return 0 if resto < 2 else 11 - resto
+
+        pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+        digito1 = calcular_digito(cnpj[:12], pesos1)
+        digito2 = calcular_digito(cnpj[:13], pesos2)
+
+        return cnpj[12:14] == f"{digito1}{digito2}"
+
+# ========================================
+# ARQUIVO: apps/notifications/observers.py
+# OBSERVER PARA NOTIFICAÇÕES PUSH
+# ========================================
+
+from apps.core.observers import Observer
+from apps.notifications.models import Notification, Device
+
+
+class PushStoreObserver(Observer):
+    """Creates Notification rows for users when certain events occur.
+
+    This keeps push delivery server-side and lets mobile clients poll pending
+    notifications and show them natively.
+    """
+    def update(self, subject, event_type: str, **kwargs):
+        if event_type == 'lancamento_created':
+            lanc = kwargs.get('lancamento')
+            if lanc is None:
+                return
+            # Notificar por usuário (id): seleciona usuários a partir de Devices associados à mesma empresa do Job
+            try:
+                empresa = lanc.nota_fiscal.job_origem.empresa
+                device_qs = Device.objects.filter(empresa=empresa, active=True).exclude(user__isnull=True)
+                user_ids = set(device_qs.values_list('user_id', flat=True))
+                for uid in user_ids:
+                    Notification.objects.create(
+                        user_id=uid,
+                        title='Novo lançamento',
+                        body=f"{lanc.descricao} - R$ {lanc.valor}",
+                        data={'lancamento_id': str(lanc.uuid)},
+                    )
+            except Exception:
+                # caso o relacionamento não exista ou falhe, não interrompa o fluxo do serviço
+                return
+
+        if event_type == 'parceiro_created_or_updated':
+            parceiro = kwargs.get('parceiro')
+            if parceiro is None:
+                return
+            # notify admin users or company users (project-specific decision)
+            # For now we do nothing specific to keep minimal.
+            return
+
+# ========================================
+# ARQUIVO: apps/notas/services.py
+# SERVIÇO PRINCIPAL QUE USA O OBSERVER PATTERN
+# ========================================
+
+from apps.parceiros.models import Parceiro
+from apps.processamento.models import JobProcessamento
+from apps.notas.models import NotaFiscal
+from apps.financeiro.models import LancamentoFinanceiro
+from apps.notas.extractors import ExtractorInterface, ExtractorFactory
+from apps.financeiro.strategies import TipoLancamentoContext
+from apps.classificadores.models import get_classifier
+from apps.core.observers import Subject
+from apps.financeiro.observers import AlertaVencimentoObserver
+from apps.dashboard.observers import MetricasFinanceirasObserver
+from apps.parceiros.observers import ValidacaoCNPJObserver
+from apps.notifications.observers import PushStoreObserver
+
+
+class NotaFiscalService(Subject):
+    def __init__(self, extractor: ExtractorInterface = None, tipo_lancamento_context: TipoLancamentoContext = None):
+        super().__init__()
+        self.extractor = extractor
+        self.tipo_lancamento_context = tipo_lancamento_context or TipoLancamentoContext()
+
+        # registrar observers padrão
+        self.attach(AlertaVencimentoObserver())
+        self.attach(MetricasFinanceirasObserver())
+        self.attach(ValidacaoCNPJObserver())
+        # armazena notificações server-side para clients polling
+        try:
+            self.attach(PushStoreObserver())
+        except Exception:
+            # keep backward compatibility if notifications app absent
+            pass
+
+    def processar_nota_fiscal_do_job(self, job: JobProcessamento) -> LancamentoFinanceiro:
+        # import transaction lazily to avoid top-level import resolution issues in static checks
+        from django.db import transaction
+
+        with transaction.atomic():
+            minha_empresa = job.empresa
+
+            # Usa factory se extractor não foi fornecido
+            extractor = self.extractor or ExtractorFactory.get_extractor(job.arquivo_original.name)
+
+            file_content = job.arquivo_original.read()
+            dados_extraidos = extractor.extract(file_content, job.arquivo_original.name)
+
+            # Usa strategy para determinar tipo e parceiro
+            resultado = self.tipo_lancamento_context.determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+
+            parceiro = self._get_or_create_parceiro(**resultado['parceiro_data'])
+
+            nota_fiscal = NotaFiscal.objects.create(
+                job_origem=job,
+                parceiro=parceiro,
+                numero=dados_extraidos.numero,
+                data_emissao=dados_extraidos.data_emissao,
+                valor_total=dados_extraidos.valor_total,
+            )
+
+            status_pendente = get_classifier('STATUS_LANCAMENTO', 'PENDENTE')
+            lancamento = LancamentoFinanceiro.objects.create(
+                nota_fiscal=nota_fiscal,
+                descricao=f"NF {nota_fiscal.numero} - {parceiro.nome}",
+                valor=nota_fiscal.valor_total,
+                clf_tipo=resultado['tipo_lancamento'],
+                clf_status=status_pendente,
+                data_vencimento=dados_extraidos.data_vencimento,
+            )
+
+            # notificar observers sobre o lançamento criado
+            self.notify('lancamento_created', lancamento=lancamento)
+
+            return lancamento
+
+    def _get_or_create_parceiro(self, cnpj: str, nome: str, clf_tipo) -> Parceiro:
+        parceiro, created = Parceiro.objects.get_or_create(cnpj=cnpj, defaults={'nome': nome, 'clf_tipo': clf_tipo})
+        if not created:
+            update_fields = []
+            if parceiro.nome != nome:
+                parceiro.nome = nome
+                update_fields.append('nome')
+            if parceiro.clf_tipo_id != clf_tipo.id:
+                parceiro.clf_tipo = clf_tipo
+                update_fields.append('clf_tipo')
+            if update_fields:
+                parceiro.save(update_fields=update_fields)
+
+        # notificar observers sobre parceiro criado/atualizado
+        self.notify('parceiro_created_or_updated', parceiro=parceiro)
+
+        return parceiro</content>
+<parameter name="filePath">/home/vinicius/Downloads/estudo/engenharia-software/gestao_notas/docs/patterns/observer/observer_pattern_code_export.txt

@@ -1,0 +1,81 @@
+@startuml Observer Pattern Implementation
+
+title Diagrama de Classes - Padrão Observer
+
+left to right direction
+skinparam linetype ortho
+
+package "Core Observer" as core {
+    interface Observer {
+        +{abstract} update(subject: Any, event_type: str, **kwargs)
+    }
+
+    class Subject {
+        -_observers: List<Observer>
+        +attach(observer: Observer)
+        +detach(observer: Observer)
+        +notify(event_type: str, **kwargs)
+    }
+
+    Observer <|.. Subject : implements pattern
+}
+
+package "Serviço Principal" as service {
+    class NotaFiscalService {
+        -extractor: ExtractorInterface
+        -tipo_lancamento_context: TipoLancamentoContext
+        +__init__(extractor=?, tipo_lancamento_context=?)
+        +processar_nota_fiscal_do_job(job: JobProcessamento): LancamentoFinanceiro
+        -_get_or_create_parceiro(cnpj: str, nome: str, clf_tipo): Parceiro
+    }
+
+    Subject <|-- NotaFiscalService : extends
+    NotaFiscalService o-- Observer : attaches multiple
+}
+
+package "Observers Específicos" as observers {
+    class AlertaVencimentoObserver {
+        +update(subject, event_type: str, **kwargs)
+        -_verificar_vencimento_proximo(lancamento)
+    }
+
+    class MetricasFinanceirasObserver {
+        +update(subject, event_type: str, **kwargs)
+        -_atualizar_metricas()
+    }
+
+    class ValidacaoCNPJObserver {
+        +update(subject, event_type: str, **kwargs)
+        -_validar_cnpj(parceiro)
+        -_calcular_digito_verificador(cnpj: str): bool
+    }
+
+    class PushStoreObserver {
+        +update(subject, event_type: str, **kwargs)
+    }
+
+    Observer <|.. AlertaVencimentoObserver
+    Observer <|.. MetricasFinanceirasObserver
+    Observer <|.. ValidacaoCNPJObserver
+    Observer <|.. PushStoreObserver
+}
+
+' Relacionamentos de notificação
+NotaFiscalService ..> Observer : notifies > "lancamento_created"
+NotaFiscalService ..> Observer : notifies > "parceiro_created_or_updated"
+
+' Eventos específicos
+note right of AlertaVencimentoObserver : Reage a "lancamento_created"\nVerifica vencimentos próximos
+
+note right of MetricasFinanceirasObserver : Reage a "lancamento_created"\nRecalcula métricas do dashboard
+
+note right of ValidacaoCNPJObserver : Reage a "parceiro_created_or_updated"\nValida CNPJ do parceiro
+
+note right of PushStoreObserver : Reage a "lancamento_created"\nCria notificações para usuários
+
+' Notas explicativas
+note bottom of Subject : Padrão Observer\nGerencia lista de observers\nNotifica todos sobre eventos
+
+note bottom of NotaFiscalService : Subject Concreto\nRegistra observers no __init__\nNotifica após operações importantes
+
+@enduml

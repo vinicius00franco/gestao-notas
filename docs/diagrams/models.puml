@@ -1,0 +1,151 @@
+@startuml models_diagram_consolidated
+' Diagrama de Modelos Consolidado - Atualizado 29/09/2025
+skinparam linetype ortho
+
+' ===================================
+' Tabela de Domínio Generalizada
+' ===================================
+entity "geral_classificadores" as clf {
+  * clf_id : int (PK)
+  * clf_uuid : uuid
+  --
+  clf_tipo : varchar(50) ' Ex: 'STATUS_JOB', 'TIPO_PARCEIRO', 'TIPO_LANCAMENTO'
+  clf_codigo : varchar(50) ' Ex: 'CONCLUIDO', 'CLIENTE', 'RECEITA'
+  clf_descricao : varchar(255)
+  --
+  UNIQUE(clf_tipo, clf_codigo)
+}
+
+' ===================================
+' Tabelas de Cadastro / Mestre
+' ===================================
+entity "cadastro_empresas" as emp {
+  * emp_id : int (PK)
+  * emp_uuid : uuid
+  --
+  emp_nome : varchar(255)
+  emp_cnpj : varchar(18) {unique}
+  emp_senha_hash : varchar(128)
+  .. Auditoria ..
+  emp_dt_criacao : timestamptz
+  emp_dt_alteracao : timestamptz
+  emp_usr_criacao : int
+  emp_usr_alteracao : int
+  emp_dt_exclusao : timestamptz
+}
+
+entity "cadastro_parceiros" as pcr {
+  * pcr_id : int (PK)
+  * pcr_uuid : uuid
+  --
+  # clf_id_tipo : int (FK) -> aponta para clf(TIPO_PARCEIRO)
+  pcr_nome : varchar(255)
+  pcr_cnpj : varchar(18) {unique}
+}
+
+' ===================================
+' Tabelas de Movimento / Transacionais
+' ===================================
+entity "movimento_jobs_processamento" as jbp {
+  * jbp_id : int (PK)
+  * jbp_uuid : uuid
+  --
+  # emp_id : int (FK)
+  # clf_id_status : int (FK) -> aponta para clf(STATUS_JOB)
+  jbp_arquivo_original : varchar(255)
+  jbp_mensagem_erro : text
+  jbp_dt_conclusao : timestamptz
+  .. Auditoria ..
+  jbp_dt_criacao : timestamptz
+  jbp_dt_alteracao : timestamptz
+  jbp_usr_criacao : int
+  jbp_usr_alteracao : int
+}
+
+entity "movimento_notas_fiscais" as ntf {
+  * ntf_id : int (PK)
+  * ntf_uuid : uuid
+  --
+  # jbp_id : int (FK)
+  # pcr_id : int (FK)
+  ntf_numero : varchar(100)
+  ntf_data_emissao : date
+  ntf_valor_total : numeric(12,2) ' Soma dos itens
+}
+
+entity "movimento_nota_fiscal_itens" as nfi {
+  * nfi_id : int (PK)
+  * nfi_uuid : uuid
+  --
+  # ntf_id : int (FK)
+  nfi_descricao : varchar(255)
+  nfi_quantidade : numeric(10,3)
+  nfi_valor_unitario : numeric(10,2)
+  nfi_valor_total : numeric(12,2)
+}
+
+entity "movimento_lancamentos_financeiros" as lcf {
+  * lcf_id : int (PK)
+  * lcf_uuid : uuid
+  --
+  # ntf_id : int (FK) -> OneToOneField
+  # clf_id_tipo : int (FK) -> aponta para clf(TIPO_LANCAMENTO)
+  # clf_id_status : int (FK) -> aponta para clf(STATUS_LANCAMENTO)
+  lcf_descricao : varchar(255)
+  lcf_valor : numeric(10,2)
+  lcf_data_vencimento : date
+  lcf_data_pagamento : date
+  .. Auditoria ..
+  lcf_dt_criacao : timestamptz
+  lcf_dt_alteracao : timestamptz
+  lcf_usr_criacao : int
+  lcf_usr_alteracao : int
+}
+
+' ===================================
+' Módulo de Notificações
+' ===================================
+entity "notifications_device" as dev {
+  * id : int (PK)
+  --
+  user_id : int (FK)
+  empresa_id : int (FK)
+  token : varchar(512) {unique}
+  platform : varchar(16) ' ios/android
+  active : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "notifications_notification" as notif {
+  * id : int (PK)
+  --
+  user_id : int (FK)
+  title : varchar(255)
+  body : text
+  data : json
+  delivered : boolean
+  created_at : timestamptz
+  delivered_at : timestamptz
+}
+
+' ===================================
+' Relacionamentos
+' ===================================
+
+' Relacionamentos principais
+emp ||--|{ jbp : "1 empresa tem muitos jobs"
+jbp ||--|{ ntf : "1 job gera muitas notas"
+pcr ||--o{ ntf : "1 parceiro pode ter muitas notas"
+ntf ||--|{ nfi : "1 nota tem muitos itens"
+ntf ||--|| lcf : "1 nota tem 1 lançamento (OneToOne)"
+
+' Relacionamentos com a tabela de classificadores
+clf <. pcr : "tipo de parceiro"
+clf <. jbp : "status do job"
+clf <. lcf : "tipo de lançamento"
+clf <. lcf : "status do lançamento"
+
+' Relacionamentos do módulo de notificações
+emp ||--o{ dev : "empresa tem dispositivos"
+notif }o--|| dev : "notificação pertence a usuário"

@@ -2,6 +2,9 @@
 
 title Diagrama de Classes - Padrão Strategy
 
+left to right direction
+skinparam linetype ortho
+
 package "Estratégias de Extração" as extraction {
     interface ExtractorInterface {
         +extract(file_content: bytes, filename: str): InvoiceData
