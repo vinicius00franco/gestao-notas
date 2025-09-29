@@ -1,0 +1,230 @@
+# ========================================
+# IMPLEMENTAÇÃO DO STRATEGY PATTERN - API GESTÃO DE NOTAS
+# ========================================
+
+# ========================================
+# ARQUIVO: apps/notas/extractors.py
+# ESTRATÉGIAS DE EXTRAÇÃO DE DADOS
+# ========================================
+
+import abc
+import xml.etree.ElementTree as ET
+from decimal import Decimal
+from datetime import date, datetime
+from pydantic import BaseModel
+
+class InvoiceData(BaseModel):
+    numero: str
+    remetente_cnpj: str
+    remetente_nome: str
+    destinatario_cnpj: str
+    destinatario_nome: str
+    valor_total: Decimal
+    data_emissao: date
+    data_vencimento: date
+
+class ExtractorInterface(abc.ABC):
+    @abc.abstractmethod
+    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
+        raise NotImplementedError
+
+class PDFExtractor(ExtractorInterface):
+    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
+        print("--- USANDO EXTRATOR PDF ---")
+        # Simulação de extração de PDF
+        return InvoiceData(
+            numero="PDF-001",
+            remetente_cnpj="12.345.678/0001-90",
+            remetente_nome="Empresa PDF LTDA",
+            destinatario_cnpj="99.999.999/0001-99",
+            destinatario_nome="Minha Empresa Inc",
+            valor_total=Decimal("1500.00"),
+            data_emissao=date.today(),
+            data_vencimento=date.today()
+        )
+
+class XMLExtractor(ExtractorInterface):
+    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
+        print("--- USANDO EXTRATOR XML (NFe) ---")
+        try:
+            root = ET.fromstring(file_content.decode('utf-8'))
+            # Simulação de parsing XML NFe
+            return InvoiceData(
+                numero="XML-NFe-001",
+                remetente_cnpj="11.111.111/0001-11",
+                remetente_nome="Fornecedor XML SA",
+                destinatario_cnpj="99.999.999/0001-99",
+                destinatario_nome="Minha Empresa Inc",
+                valor_total=Decimal("2000.00"),
+                data_emissao=date.today(),
+                data_vencimento=date.today()
+            )
+        except ET.ParseError:
+            raise ValueError("Arquivo XML inválido")
+
+class ImageExtractor(ExtractorInterface):
+    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
+        print("--- USANDO EXTRATOR OCR (IMAGEM) ---")
+        # Simulação de OCR
+        return InvoiceData(
+            numero="OCR-001",
+            remetente_cnpj="22.222.222/0001-22",
+            remetente_nome="Empresa Imagem LTDA",
+            destinatario_cnpj="99.999.999/0001-99",
+            destinatario_nome="Minha Empresa Inc",
+            valor_total=Decimal("800.00"),
+            data_emissao=date.today(),
+            data_vencimento=date.today()
+        )
+
+class ExtractorFactory:
+    @staticmethod
+    def get_extractor(filename: str) -> ExtractorInterface:
+        extension = filename.lower().split('.')[-1]
+        
+        if extension == 'pdf':
+            return PDFExtractor()
+        elif extension == 'xml':
+            return XMLExtractor()
+        elif extension in ['jpg', 'jpeg', 'png', 'tiff']:
+            return ImageExtractor()
+        else:
+            return SimulatedExtractor()
+
+class SimulatedExtractor(ExtractorInterface):
+    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
+        print("--- USANDO EXTRATOR SIMULADO ---")
+        is_compra = "compra" in filename.lower()
+        my_cnpj = "99.999.999/0001-99"
+        if is_compra:
+            return InvoiceData(
+                remetente_cnpj="11.222.333/0001-44", remetente_nome="Fornecedor Simulado LTDA",
+                destinatario_cnpj=my_cnpj, destinatario_nome="Minha Empresa Inc",
+                valor_total=Decimal("750.00"), data_emissao=date(2025, 9, 26),
+                data_vencimento=date(2025, 10, 26), numero="NF-COMPRA-123"
+            )
+        else:
+            return InvoiceData(
+                remetente_cnpj=my_cnpj, remetente_nome="Minha Empresa Inc",
+                destinatario_cnpj="55.666.777/0001-88", destinatario_nome="Cliente Simulado SA",
+                valor_total=Decimal("1200.50"), data_emissao=date(2025, 9, 27),
+                data_vencimento=date(2025, 10, 27), numero="NF-VENDA-456"
+            )
+
+# ========================================
+# ARQUIVO: apps/financeiro/strategies.py
+# ESTRATÉGIAS FINANCEIRAS
+# ========================================
+
+# apps/financeiro/strategies.py
+import abc
+from apps.classificadores.models import get_classifier
+
+class TipoLancamentoStrategy(abc.ABC):
+    @abc.abstractmethod
+    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+        pass
+
+class NotaCompraStrategy(TipoLancamentoStrategy):
+    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+        if dados_extraidos.destinatario_cnpj == minha_empresa.cnpj:
+            return {
+                'tipo_lancamento': get_classifier('TIPO_LANCAMENTO', 'PAGAR'),
+                'parceiro_data': {
+                    'cnpj': dados_extraidos.remetente_cnpj,
+                    'nome': dados_extraidos.remetente_nome,
+                    'clf_tipo': get_classifier('TIPO_PARCEIRO', 'FORNECEDOR')
+                }
+            }
+        raise ValueError("Nota não é de compra para esta empresa")
+
+class NotaVendaStrategy(TipoLancamentoStrategy):
+    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+        if dados_extraidos.remetente_cnpj == minha_empresa.cnpj:
+            return {
+                'tipo_lancamento': get_classifier('TIPO_LANCAMENTO', 'RECEBER'),
+                'parceiro_data': {
+                    'cnpj': dados_extraidos.destinatario_cnpj,
+                    'nome': dados_extraidos.destinatario_nome,
+                    'clf_tipo': get_classifier('TIPO_PARCEIRO', 'CLIENTE')
+                }
+            }
+        raise ValueError("Nota não é de venda desta empresa")
+
+class TipoLancamentoContext:
+    def __init__(self):
+        self.strategies = [NotaCompraStrategy(), NotaVendaStrategy()]
+    
+    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+        for strategy in self.strategies:
+            try:
+                return strategy.determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+            except ValueError:
+                continue
+        raise ValueError("Nota fiscal não pertence à sua empresa (CNPJ não corresponde).")
+
+# ========================================
+# ARQUIVO: apps/notas/services.py
+# SERVIÇO PRINCIPAL QUE USA AS ESTRATÉGIAS
+# ========================================
+
+from django.db import transaction
+from apps.parceiros.models import Parceiro
+from apps.processamento.models import JobProcessamento
+from apps.notas.models import NotaFiscal
+from apps.financeiro.models import LancamentoFinanceiro
+from apps.notas.extractors import ExtractorInterface, ExtractorFactory
+from apps.financeiro.strategies import TipoLancamentoContext
+from apps.classificadores.models import get_classifier
+
+class NotaFiscalService:
+    def __init__(self, extractor: ExtractorInterface = None, tipo_lancamento_context: TipoLancamentoContext = None):
+        self.extractor = extractor
+        self.tipo_lancamento_context = tipo_lancamento_context or TipoLancamentoContext()
+
+    @transaction.atomic
+    def processar_nota_fiscal_do_job(self, job: JobProcessamento) -> LancamentoFinanceiro:
+        minha_empresa = job.empresa
+        
+        # Usa factory se extractor não foi fornecido
+        extractor = self.extractor or ExtractorFactory.get_extractor(job.arquivo_original.name)
+        
+        file_content = job.arquivo_original.read()
+        dados_extraidos = extractor.extract(file_content, job.arquivo_original.name)
+
+        # Usa strategy para determinar tipo e parceiro
+        resultado = self.tipo_lancamento_context.determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+        
+        parceiro = self._get_or_create_parceiro(**resultado['parceiro_data'])
+
+        nota_fiscal = NotaFiscal.objects.create(
+            job_origem=job,
+            parceiro=parceiro,
+            numero=dados_extraidos.numero,
+            data_emissao=dados_extraidos.data_emissao,
+            valor_total=dados_extraidos.valor_total,
+        )
+
+        status_pendente = get_classifier('STATUS_LANCAMENTO', 'PENDENTE')
+        return LancamentoFinanceiro.objects.create(
+            nota_fiscal=nota_fiscal,
+            descricao=f"NF {nota_fiscal.numero} - {parceiro.nome}",
+            valor=nota_fiscal.valor_total,
+            clf_tipo=resultado['tipo_lancamento'],
+            clf_status=status_pendente,
+            data_vencimento=dados_extraidos.data_vencimento,
+        )
+
+    def _get_or_create_parceiro(self, cnpj: str, nome: str, clf_tipo) -> Parceiro:
+        parceiro, created = Parceiro.objects.get_or_create(cnpj=cnpj, defaults={'nome': nome, 'clf_tipo': clf_tipo})
+        if not created:
+            update_fields = []
+            if parceiro.nome != nome:
+                parceiro.nome = nome
+                update_fields.append('nome')
+            if parceiro.clf_tipo_id != clf_tipo.id:
+                parceiro.clf_tipo = clf_tipo
+                update_fields.append('clf_tipo')
+            if update_fields:
+                parceiro.save(update_fields=update_fields)
+        return parceiro

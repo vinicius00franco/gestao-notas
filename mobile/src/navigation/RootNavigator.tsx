@@ -7,6 +7,7 @@ import ContasAPagarScreen from '@/screens/ContasAPagarScreen';
 import ContasAReceberScreen from '@/screens/ContasAReceberScreen';
 import UploadNotaScreen from '@/screens/UploadNotaScreen';
 import JobStatusScreen from '@/screens/JobStatusScreen';
+import HomeScreen from '@/screens/HomeScreen';
 import { useColorScheme } from 'react-native';
 
 const Tab = createBottomTabNavigator();
@@ -14,7 +15,7 @@ const Stack = createNativeStackNavigator();
 
 function Tabs() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Pagar" component={ContasAPagarScreen} />
       <Tab.Screen name="Receber" component={ContasAReceberScreen} />
@@ -27,8 +28,9 @@ export default function RootNavigator() {
   const scheme = useColorScheme();
   return (
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={Tabs} options={{ headerShown: false }} />
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Início' }} />
+  <Stack.Screen name="MainTabs" component={Tabs} options={{ title: 'Gestão de Notas' }} />
         <Stack.Screen name="JobStatus" component={JobStatusScreen} options={{ title: 'Status do Job' }} />
       </Stack.Navigator>
     </NavigationContainer>

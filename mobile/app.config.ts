@@ -1,3 +1,5 @@
+import 'dotenv/config'
+declare const process: any;
 const defineConfig = () => ({
   name: 'gestao-notas-mobile',
   slug: 'gestao-notas-mobile',
@@ -16,7 +18,7 @@ const defineConfig = () => ({
   // android: { adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: '#ffffff' } },
   // web: { bundler: 'metro', output: 'static', favicon: './assets/favicon.png' },
   extra: {
-    apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8000'
+    apiBaseUrl: (process as any)?.env?.API_BASE_URL || 'http://localhost:8000'
   }
 });
 

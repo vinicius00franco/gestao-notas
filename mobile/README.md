@@ -61,9 +61,14 @@ pnpm install && pnpm expo install
 npm install && npx expo install
 ```
 
-3) Configurar API Base URL (padrão: http://localhost:8000)
+3) Configurar API Base URL
+- Web/Emulador: padrão já funciona (`http://localhost:8000`)
+- Dispositivo físico (mesma rede Wi‑Fi): crie um arquivo `.env` em `mobile/` baseado no `.env.example` e aponte para o IP da sua máquina
 ```bash
-export API_BASE_URL="http://localhost:8000"
+cd mobile
+cp .env.example .env
+# edite .env e ajuste o IP/porta, por ex:
+# API_BASE_URL=http://192.168.122.1:80
 ```
 
 4) Rodar o app
@@ -72,6 +77,14 @@ pnpm start
 # ou
 npm run start
 ```
+
+Para usar no aparelho físico com QR Code, é comum usar túnel:
+```bash
+npm run start:tunnel
+```
+O app também tenta deduzir automaticamente o IP do host do Metro e usar a porta 80 (Nginx do docker-compose). Se você definir `API_BASE_URL` no `.env`, essa configuração tem prioridade.
+
+Se aparecer erro de CORS no Expo Web/Dispositivo, verifique se a API expõe os cabeçalhos de CORS e se o origin do Expo está permitido. Neste repo, o backend Django já está configurado para permitir em `DEBUG`.
 
 ## Mapeamento de Telas -> Endpoints
 - Dashboard: GET `/api/dashboard/`

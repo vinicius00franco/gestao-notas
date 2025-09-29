@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     # Feature apps
     'apps.parceiros',
     'apps.empresa',
@@ -25,6 +26,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    # Ensure CommonMiddleware comes after CorsMiddleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -89,6 +92,29 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS configuration
+# During local development, we allow all origins to simplify Web/Expo access
+# and still keep credentials support. In production, restrict as needed.
+CORS_ALLOW_CREDENTIALS = True
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # Explicitly list trusted frontends when not in DEBUG
+    CORS_ALLOWED_ORIGINS = [
+        'http://localhost:8081',
+        'http://127.0.0.1:8081',
+    ]
+
+# Trust common local dev origins for CSRF when using session/cookie auth
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8081',
+    'http://127.0.0.1:8081',
+    'http://192.168.122.1',
+    'http://192.168.122.1:8081',
+]
+
 
 # --- CELERY SETTINGS ---
 CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='amqp://guest:guest@rabbitmq:5672/')
