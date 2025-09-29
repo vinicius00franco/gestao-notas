@@ -9,6 +9,7 @@ from apps.core.observers import Subject
 from apps.financeiro.observers import AlertaVencimentoObserver
 from apps.dashboard.observers import MetricasFinanceirasObserver
 from apps.parceiros.observers import ValidacaoCNPJObserver
+from apps.notifications.observers import PushStoreObserver
 
 
 class NotaFiscalService(Subject):
@@ -21,6 +22,12 @@ class NotaFiscalService(Subject):
         self.attach(AlertaVencimentoObserver())
         self.attach(MetricasFinanceirasObserver())
         self.attach(ValidacaoCNPJObserver())
+        # armazena notificações server-side para clients polling
+        try:
+            self.attach(PushStoreObserver())
+        except Exception:
+            # keep backward compatibility if notifications app absent
+            pass
 
     def processar_nota_fiscal_do_job(self, job: JobProcessamento) -> LancamentoFinanceiro:
         # import transaction lazily to avoid top-level import resolution issues in static checks

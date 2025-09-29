@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     # Feature apps
     'apps.parceiros',
@@ -23,6 +24,7 @@ INSTALLED_APPS = [
     'apps.financeiro',
     'apps.dashboard',
     'apps.classificadores',
+    'apps.notifications',
 ]
 
 MIDDLEWARE = [
@@ -92,6 +94,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# DRF / JWT
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'backend.authentication.EmpresaJWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}
+
 
 # CORS configuration
 # During local development, we allow all origins to simplify Web/Expo access

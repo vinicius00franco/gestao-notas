@@ -1,0 +1,50 @@
+@startuml observers_arch
+skinparam linetype ortho
+skinparam class {
+  ArrowColor black
+  BorderColor black
+}
+
+left to right direction
+
+package "Core" {
+  class Subject
+  class Observer
+}
+
+class NotaFiscalService {
+  +processar_nota_fiscal_do_job(job: JobProcessamento) : LancamentoFinanceiro
+  +_get_or_create_parceiro(cnpj:str, nome:str, clf_tipo) : Parceiro
+}
+
+package "Apps" {
+  package Notas {
+    class NotaFiscal
+  }
+  package Parceiros {
+    class Parceiro
+  }
+  package Financeiro {
+    class LancamentoFinanceiro
+  }
+  package Dashboard {
+    class DashboardMetrics
+  }
+}
+
+Subject <|-- NotaFiscal
+Observer <|-- AlertaVencimentoObserver
+Observer <|-- MetricasFinanceirasObserver
+Observer <|-- ValidacaoCNPJObserver
+
+NotaFiscalService --> Subject : extends
+NotaFiscalService --> AlertaVencimentoObserver : attach()
+NotaFiscalService --> MetricasFinanceirasObserver : attach()
+NotaFiscalService --> ValidacaoCNPJObserver : attach()
+
+NotaFiscal --> LancamentoFinanceiro : cria
+LancamentoFinanceiro --> AlertaVencimentoObserver : notify(lancamento_created)
+LancamentoFinanceiro --> MetricasFinanceirasObserver : notify(lancamento_created)
+Parceiro --> ValidacaoCNPJObserver : notify(parceiro_created_or_updated)
+
+@enduml

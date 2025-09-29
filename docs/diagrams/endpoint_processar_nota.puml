@@ -1,0 +1,110 @@
+
+@startuml endpoint_processar_nota_classes
+skinparam linetype ortho
+skinparam class {
+  ArrowColor black
+  BorderColor black
+}
+
+left to right direction
+
+package "API / Processamento" {
+  class ProcessarNotaFiscalView {
+    +post(request)
+  }
+
+  class UploadNotaFiscalSerializer {
+    +arquivo: FileField
+    +meu_cnpj: CharField
+    +is_valid(): bool
+    +validated_data
+  }
+
+  class JobProcessamento {
+    +id: BigAutoField
+    +uuid: UUID
+    +arquivo_original: File
+    +empresa: MinhaEmpresa
+    +status: Classificador
+    +dt_criacao: DateTime
+    +dt_conclusao: DateTime?
+    +mensagem_erro: Text?
+    +__str__(): str
+  }
+
+  class CeleryTaskPublisher {
+    +publish_processamento_nota(job_id: int)
+  }
+}
+
+package "Tasks / Service" {
+  class processar_nota_fiscal_task {
+    +delay(job_id: int)
+  }
+
+  class NotaFiscalService {
+    +processar_nota_fiscal_do_job(job: JobProcessamento) : LancamentoFinanceiro
+    -_get_or_create_parceiro(cnpj:str, nome:str, clf_tipo) : Parceiro
+  }
+
+  class ExtractorFactory {
+    +get_extractor(filename: str) : ExtractorInterface
+  }
+
+  class TipoLancamentoContext {
+    +determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
+  }
+}
+
+package "Domain Models" {
+  class NotaFiscal {
+    +id: BigAutoField
+    +uuid: UUID
+    +numero: CharField
+    +data_emissao: Date
+    +valor_total: Decimal
+    +parceiro: Parceiro
+    +job_origem: JobProcessamento
+    +__str__(): str
+  }
+
+  class LancamentoFinanceiro {
+    +id: BigAutoField
+    +uuid: UUID
+    +descricao: CharField
+    +valor: Decimal
+    +clf_tipo: Classificador
+    +clf_status: Classificador
+    +data_vencimento: Date
+    +data_pagamento: Date?
+    +nota_fiscal: NotaFiscal
+    +__str__(): str
+  }
+
+  class Parceiro {
+    +id: BigAutoField
+    +uuid: UUID
+    +nome: CharField
+    +cnpj: CharField
+    +clf_tipo: Classificador
+    +__str__(): str
+  }
+}
+
+' Relationships (associations)
+ProcessarNotaFiscalView --> UploadNotaFiscalSerializer : uses
+ProcessarNotaFiscalView --> JobProcessamento : create
+ProcessarNotaFiscalView --> CeleryTaskPublisher : uses
+CeleryTaskPublisher --> processar_nota_fiscal_task : enqueues
+processar_nota_fiscal_task --> NotaFiscalService : invokes
+NotaFiscalService --> ExtractorFactory : uses
+NotaFiscalService --> TipoLancamentoContext : uses
+NotaFiscalService --> NotaFiscal : creates
+NotaFiscalService --> LancamentoFinanceiro : creates
+NotaFiscalService --> Parceiro : get_or_create
+
+NotaFiscal "1" --> "1" JobProcessamento : job_origem
+NotaFiscal "1" -- "1" Parceiro : parceiro
+LancamentoFinanceiro "1" -- "1" NotaFiscal : nota_fiscal
+
+@enduml

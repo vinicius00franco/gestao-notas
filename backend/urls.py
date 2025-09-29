@@ -10,6 +10,8 @@ urlpatterns = [
     path('api/', include('apps.processamento.urls')),
     path('api/', include('apps.financeiro.urls')),
     path('api/', include('apps.dashboard.urls')),
+    path('api/', include('apps.empresa.urls')),
+    path('api/notifications/', include('apps.notifications.urls')),
 ]
 
 # Servir arquivos de media em ambiente de desenvolvimento

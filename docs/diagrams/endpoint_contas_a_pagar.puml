@@ -1,0 +1,77 @@
+
+@startuml endpoint_contas_a_pagar_classes
+skinparam linetype ortho
+left to right direction
+
+title Endpoint: GET /api/contas-a-pagar/  (ContasAPagarListView)
+
+class ContasAPagarListView {
+  +get(request)
+  +get_queryset()
+  +serializer_class = LancamentoFinanceiroSerializer
+  ' get_queryset applies filters: clf_tipo=TIPO_LANCAMENTO.PAGAR and clf_status=STATUS_LANCAMENTO.PENDENTE
+  ' uses select_related('nota_fiscal__parceiro') and order_by('data_vencimento')
+}
+
+class LancamentoFinanceiroSerializer {
+  +uuid
+  +descricao
+  +valor
+  +data_vencimento
+  +data_pagamento
+  +clf_tipo
+  +clf_status
+  +dt_criacao
+  +dt_alteracao
+  ' ModelSerializer depth=2 (serializes related nota_fiscal -> parceiro)
+}
+
+class LancamentoFinanceiro {
+  +id: BigAutoField
+  +uuid: UUIDField
+  +nota_fiscal: OneToOne(Notafiscal)
+  +descricao: CharField
+  +valor: DecimalField
+  +clf_tipo: ForeignKey(Classificador)
+  +clf_status: ForeignKey(Classificador)
+  +data_vencimento: DateField
+  +data_pagamento: DateField (nullable)
+  +dt_criacao: DateTime
+  +dt_alteracao: DateTime
+}
+
+class NotaFiscal {
+  +id: BigAutoField
+  +uuid: UUIDField
+  +job_origem: ForeignKey(JobProcessamento)
+  +parceiro: ForeignKey(Parceiro)
+  +numero: CharField
+  +data_emissao: Date
+  +valor_total: Decimal
+}
+
+class Parceiro {
+  +id: BigAutoField
+  +nome: CharField
+  +cnpj: CharField
+  +clf_tipo: Classificador
+}
+
+class Classificador {
+  +id
+  +tipo
+  +codigo
+  +descricao
+}
+
+' Relationships
+ContasAPagarListView --> LancamentoFinanceiro : queryset(filter clf_tipo=PAGAR, clf_status=PENDENTE)
+ContasAPagarListView --> LancamentoFinanceiroSerializer : uses
+LancamentoFinanceiroSerializer --> LancamentoFinanceiro : serializes
+LancamentoFinanceiro --> NotaFiscal : nota_fiscal (OneToOne)
+NotaFiscal --> Parceiro : parceiro (FK)
+LancamentoFinanceiro --> Classificador : clf_tipo / clf_status
+
+note right: This view is implemented in `apps/financeiro/views.py` and uses `apps.financeiro.serializers.LancamentoFinanceiroSerializer`.
+
+@enduml

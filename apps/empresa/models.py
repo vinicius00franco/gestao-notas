@@ -7,6 +7,7 @@ class MinhaEmpresa(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='emp_uuid')
     nome = models.CharField(max_length=255, default="Minha Empresa", db_column='emp_nome')
     cnpj = models.CharField(max_length=18, unique=True, db_column='emp_cnpj')
+    senha_hash = models.CharField(max_length=128, db_column='emp_senha_hash', default='', blank=True)
     # Auditoria básica
     dt_criacao = models.DateTimeField(auto_now_add=True, db_column='emp_dt_criacao')
     dt_alteracao = models.DateTimeField(auto_now=True, db_column='emp_dt_alteracao')

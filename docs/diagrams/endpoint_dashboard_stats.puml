@@ -1,0 +1,44 @@
+
+@startuml endpoint_dashboard_stats_classes
+skinparam linetype ortho
+left to right direction
+
+title Endpoint: GET /api/dashboard/  (DashboardStatsView)
+
+class DashboardStatsView {
+  +get(request)
+  ' returns { "top_5_fornecedores_pendentes": list[dict] }
+}
+
+class Selectors {
+  +get_top_fornecedores_pendentes() : list[dict]
+  ' Executes raw SQL joining cadastro_parceiros, movimento_notas_fiscais, movimento_lancamentos_financeiros
+}
+
+class Parceiro {
+  +id
+  +nome
+  +cnpj
+}
+
+class NotaFiscal {
+  +id
+  +parceiro
+}
+
+class LancamentoFinanceiro {
+  +id
+  +valor
+  +clf_tipo
+  +clf_status
+}
+
+' Relationships / data flow
+DashboardStatsView --> Selectors : calls
+Selectors --> Parceiro : queries
+Selectors --> NotaFiscal : joins
+Selectors --> LancamentoFinanceiro : aggregates
+
+note right: Selector `get_top_fornecedores_pendentes()` returns rows like {"nome":..., "cnpj":..., "total_a_pagar": Decimal}
+
+@enduml

@@ -27,6 +27,14 @@ export const api = axios.create({
   timeout: 15000,
 });
 
+export function setAuthToken(token?: string) {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete (api.defaults.headers.common as any)['Authorization'];
+  }
+}
+
 export type JobStatus = {
   uuid: string;
   status: { codigo: string; descricao: string };

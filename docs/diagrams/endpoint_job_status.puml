@@ -1,0 +1,52 @@
+
+@startuml endpoint_job_status_classes
+skinparam linetype ortho
+left to right direction
+
+title Endpoint: GET /api/jobs/{uuid}/  (JobStatusView)
+
+class ProcessarNotaFiscalView {
+  +post(request)
+  +serializer_class = UploadNotaFiscalSerializer
+  ' Creates JobProcessamento and enqueues Celery task via CeleryTaskPublisher
+}
+
+class UploadNotaFiscalSerializer {
+  +arquivo: FileField
+  +meu_cnpj: CharField
+}
+
+class JobProcessamentoSerializer {
+  +uuid
+  +status
+  +dt_criacao
+  +dt_conclusao
+  +mensagem_erro
+}
+
+class JobProcessamento {
+  +id: BigAutoField
+  +uuid: UUIDField
+  +arquivo_original: FileField
+  +empresa: MinhaEmpresa (FK)
+  +status: Classificador (FK)
+  +dt_criacao: DateTime
+  +dt_alteracao: DateTime
+  +dt_conclusao: DateTime (nullable)
+  +mensagem_erro: Text (nullable)
+}
+
+class CeleryTaskPublisher {
+  +publish_processamento_nota(job_id: int)
+}
+
+' Relationships / flow
+ProcessarNotaFiscalView --> UploadNotaFiscalSerializer : uses
+ProcessarNotaFiscalView --> JobProcessamento : creates
+ProcessarNotaFiscalView --> CeleryTaskPublisher : uses
+JobStatusView --> JobProcessamentoSerializer : uses
+JobProcessamentoSerializer --> JobProcessamento : represents
+
+note right: `ProcessarNotaFiscalView.post` implemented in `apps/processamento/views.py` and enqueues `processar_nota_fiscal_task`.
+
+@enduml
