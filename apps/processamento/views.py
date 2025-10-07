@@ -13,7 +13,15 @@ class ProcessarNotaFiscalView(views.APIView):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        empresa = MinhaEmpresa.objects.get(cnpj=validated_data['meu_cnpj'])
+        # Tratar CNPJ inexistente
+        try:
+            empresa = MinhaEmpresa.objects.get(cnpj=validated_data['meu_cnpj'])
+        except MinhaEmpresa.DoesNotExist:
+            return Response(
+                {"detail": "Empresa com CNPJ informado não encontrada"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         status_pendente = get_classifier('STATUS_JOB', 'PENDENTE')
         job = JobProcessamento.objects.create(
             arquivo_original=validated_data['arquivo'],

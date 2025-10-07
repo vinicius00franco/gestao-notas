@@ -31,6 +31,10 @@ class EmpresaSenhaSetupSerializer(serializers.ModelSerializer):
     class Meta:
         model = MinhaEmpresa
         fields = ['cnpj', 'senha']
+        # Remove validação de unicidade do CNPJ porque usamos get_or_create
+        extra_kwargs = {
+            'cnpj': {'validators': []},
+        }
 
     def create(self, validated_data):
         cnpj = validated_data['cnpj']

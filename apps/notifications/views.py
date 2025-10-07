@@ -40,7 +40,7 @@ class RegisterDeviceView(APIView):
 
 
 class PendingNotificationsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         # If authenticated via standard user, filter by that user
@@ -63,7 +63,7 @@ class PendingNotificationsView(APIView):
 
 
 class AcknowledgeNotificationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         notification_uuid = request.data.get('uuid')
