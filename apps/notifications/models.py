@@ -1,10 +1,13 @@
 from django.db import models
 from django.conf import settings
+import uuid
 
 
 class Device(models.Model):
     PLATFORM_CHOICES = (('ios', 'iOS'), ('android', 'Android'))
 
+    id = models.BigAutoField(primary_key=True, db_column='dvc_id')
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='dvc_uuid')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
     empresa = models.ForeignKey('empresa.MinhaEmpresa', null=True, blank=True, on_delete=models.CASCADE)
     token = models.CharField(max_length=512, unique=True)
@@ -23,6 +26,8 @@ class Notification(models.Model):
     The mobile client will poll `/api/notifications/pending/` and display these
     as local notifications when appropriate.
     """
+    id = models.BigAutoField(primary_key=True, db_column='ntf_id')
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='ntf_uuid')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=255)
     body = models.TextField()

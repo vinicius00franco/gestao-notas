@@ -6,12 +6,12 @@ from .models import Notification
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
-        fields = ['id', 'token', 'platform', 'user', 'empresa', 'active']
-        read_only_fields = ['id', 'user', 'empresa', 'active']
+        fields = ['uuid', 'token', 'platform', 'user', 'empresa', 'active']
+        read_only_fields = ['uuid', 'user', 'empresa', 'active']
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'user', 'title', 'body', 'data', 'delivered', 'created_at', 'delivered_at']
-        read_only_fields = ['id', 'delivered', 'created_at', 'delivered_at']
+        fields = ['uuid', 'user', 'title', 'body', 'data', 'delivered', 'created_at', 'delivered_at']
+        read_only_fields = ['uuid', 'delivered', 'created_at', 'delivered_at']

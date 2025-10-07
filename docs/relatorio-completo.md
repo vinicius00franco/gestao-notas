@@ -319,20 +319,64 @@ A tabela abaixo lista, item a item, os Requisitos Funcionais (RF001–RF010) e a
 | RF009 - Auditoria de Operações | Mixins/fields de auditoria presentes em modelos (`dt_criacao`, `dt_alteracao`, `usr_criacao`), implementações em `apps.*.models` | Campos de auditoria salvos nas tabelas; visíveis no admin e consultáveis via ORM; revisar `models` para campos exatos |
 | RF010 - Versionamento de API | `backend.middleware.ApiVersionFallbackMiddleware`, rotas em `backend/urls.py`, configuração em `backend/settings.py` | Suporte a headers/version param; fallback implementado pelo middleware e roteamento condicional nas urls |
 
-| RN001 - Validação de Propriedade da Nota Fiscal | `apps.notas.services.NotaFiscalService` (validação de remetente/destinatário), `apps.notas.extractors` (detecção de CNPJs) | `NotaFiscalService` verifica se `meu_cnpj` corresponde a remetente OU destinatário; caso contrário, lança erro e marca `JobProcessamento` como FALHA (mensagem de erro armazenada) |
-| RN002 - Classificação Automática de Tipo de Lançamento | `apps.financeiro.strategies` (`TipoLancamentoContext`), invocado por `apps.notas.services.NotaFiscalService` | Regra aplicada durante processamento para definir PAGAR vs RECEBER; ver implementação das Strategies para critérios específicos |
-| RN003 - Classificação Automática de Parceiros | `apps.financeiro.strategies`, `apps.parceiros.models`, `apps.notas.services.NotaFiscalService._get_or_create_parceiro` | Após determinar tipo de lançamento, parceiro é classificado como FORNECEDOR ou CLIENTE; atualização persistida no `Parceiro` |
-| RN004 - Unicidade de CNPJ por Parceiro | `apps.parceiros.models.Parceiro` (campo `cnpj` com constraint de unicidade / índice único), validações no service | Persistência impede duplicação; `_get_or_create_parceiro` usa busca por CNPJ e atualiza registro existente quando apropriado |
-| RN005 - Unicidade de CNPJ por Empresa | `apps.empresa.models.MinhaEmpresa` (campo `cnpj` único), validações em `apps.empresa` e checagem em `apps.processamento.views` | Cadastro e autenticação por CNPJ; validação antes de criar `JobProcessamento` (rejeita CNPJ inválido/duplicado) |
-| RN006 - Status de Processamento Sequencial | `apps.processamento.models.JobProcessamento` (campo `status`), `apps.classificadores.models` (valores de status), transições em `apps.processamento.tasks.processar_nota_fiscal_task` e publishers | Sequência PENDENTE → PROCESSANDO → CONCLUIDO/FALHA; timestamps `dt_criacao`/`dt_conclusao` registrados; transições ocorrem no fluxo do task worker |
-| RN007 - Status de Lançamento Financeiro | `apps.financeiro.models.LancamentoFinanceiro`, `apps.classificadores` (statuses) | Lançamentos criados automaticamente com status PENDENTE; atualização de status (PAGO/RECEBIDO) realizada por processos externos ou rotinas manuais |
-| RN008 - Relacionamento Obrigatório Nota-Lançamento | `apps.financeiro.models.LancamentoFinanceiro` (OneToOneField -> `NotaFiscal`), validações em `apps.notas.services.NotaFiscalService` | OneToOne garantido na modelagem; criação atômica no serviço; `on_delete=PROTECT` para evitar orfandade |
-| RN009 - Integridade de Valores | Validações em `apps.notas.services.NotaFiscalService`, `apps.financeiro.serializers` e constraints de DB (quando aplicável) | Confirma `LancamentoFinanceiro.valor == NotaFiscal.valor_total` antes de commit; erros abortam transação e marcam job como FALHA |
-| RN010 - Proteção de Dados Relacionados (PROTECT) | `on_delete=PROTECT` em FKs (`parceiros`, `empresas`, `classificadores`, `jobs`), definido nas models/migrations | Impede exclusões que quebrariam integridade; aplicar restrições no nível do modelo e DB |
-| RN011 - Atualização Automática de Parceiros | `apps.notas.services.NotaFiscalService._get_or_create_parceiro`, `apps.parceiros.models`, auditoria nos campos de histórico | Se houver divergência no nome/tipo do parceiro, o serviço atualiza o registro existente e registra meta-informação de alteração (campo de auditoria) |
-| RN012 - Segurança de Identificadores | Uso de `UUIDField` em modelos (`MinhaEmpresa`, `JobProcessamento`, `NotaFiscal`, `LancamentoFinanceiro`) e exposições controladas por serializers | Endpoints públicos expõem UUIDs; IDs numéricos internos mantidos privados; ver `models` e `serializers` para detalhes |
-| RN013 - Processamento Assíncrono Obrigatório | `apps.processamento.views.ProcessarNotaFiscalView`, `apps.processamento.publishers`, Celery config (`backend/celery.py`), tasks (`apps.processamento.tasks`) | Upload responde com 202 e UUID; processamento real realizado pelo worker Celery; cliente consulta por GET `/api/jobs/<uuid>/` |
-| RN014 - Filtros de Consulta Financeira | `apps.financeiro.views` (ListViews), filtros/queries em selectors (`apps.financeiro.selectors` ou dentro das views), `apps.financeiro.serializers` | Endpoints `/api/contas-a-pagar/` e `/api/contas-a-receber/` aplicam filtros (TIPO_LANCAMENTO e STATUS) e ordenação por `data_vencimento` |
-| RN015 - Transacionalidade de Processamento | `apps.notas.services.NotaFiscalService` (uso de `transaction.atomic`), tratamento de exceções nas tasks Celery (`processar_nota_fiscal_task`) | Toda operação de criação de `NotaFiscal` + `LancamentoFinanceiro` é executada dentro de uma transação; em caso de erro, rollback é executado e job marcado como FALHA |
+| RN001 - Validação de Propriedade da Nota Fiscal |
+| **Implementação**: `apps.notas.services.NotaFiscalService` (validação de remetente/destinatário)<br/>`apps.notas.extractors` (detecção de CNPJs) |
+| **O que faz / local**: Verifica se `meu_cnpj` corresponde ao remetente OU destinatário. Se NÃO, o serviço lança exceção e o `JobProcessamento` é marcado como **FALHA** (mensagem de erro armazenada no job). |
+
+| RN002 - Classificação Automática de Tipo de Lançamento |
+| **Implementação**: `apps.financeiro.strategies` (`TipoLancamentoContext`) → invocado por `apps.notas.services.NotaFiscalService` |
+| **O que faz / observações**: Define `TIPO_LANCAMENTO` como `PAGAR` ou `RECEBER` com base na posição da empresa na nota. Conferir implementações das Strategies para regras específicas. |
+
+| RN003 - Classificação Automática de Parceiros |
+| **Implementação**: `apps.financeiro.strategies`, `apps.parceiros.models`, `apps.notas.services.NotaFiscalService._get_or_create_parceiro` |
+| **O que faz / observações**: Após determinar o tipo do lançamento, o parceiro é classificado como **FORNECEDOR** ou **CLIENTE**; atualização é persistida no registro de `Parceiro`. |
+
+| RN004 - Unicidade de CNPJ por Parceiro |
+| **Implementação**: `apps.parceiros.models.Parceiro` (campo `cnpj` com constraint de unicidade / índice único) |
+| **O que faz / observações**: Persistência e validações no service impedem duplicação; `_get_or_create_parceiro` busca por CNPJ e atualiza registro existente quando apropriado. |
+
+| RN005 - Unicidade de CNPJ por Empresa |
+| **Implementação**: `apps.empresa.models.MinhaEmpresa` (campo `cnpj` único), validações em `apps.empresa` e checagem em `apps.processamento.views` |
+| **O que faz / observações**: Cadastro e autenticação por CNPJ; validação evita criação de jobs com CNPJ inválido ou duplicado. |
+
+| RN006 - Status de Processamento Sequencial |
+| **Implementação**: `apps.processamento.models.JobProcessamento` (campo `status`), `apps.classificadores.models` (valores de status), transições em `apps.processamento.tasks.processar_nota_fiscal_task` |
+| **O que faz / observações**: Sequência: **PENDENTE → PROCESSANDO → CONCLUIDO / FALHA**; timestamps `dt_criacao`/`dt_conclusao` atualizados; transições realizadas no worker Celery. |
+
+| RN007 - Status de Lançamento Financeiro |
+| **Implementação**: `apps.financeiro.models.LancamentoFinanceiro`, `apps.classificadores` (statuses) |
+| **O que faz / observações**: Lançamentos criados automaticamente iniciam com status **PENDENTE**; mudanças para `PAGO`/`RECEBIDO` ocorrem por processos financeiros/rotinas manuais. |
+
+| RN008 - Relacionamento Obrigatório Nota-Lançamento |
+| **Implementação**: `apps.financeiro.models.LancamentoFinanceiro` (OneToOneField -> `NotaFiscal`), validações em `apps.notas.services.NotaFiscalService` |
+| **O que faz / observações**: Relação OneToOne exigida; criação ocorre de forma atômica no serviço; `on_delete=PROTECT` evita lançamentos órfãos. |
+
+| RN009 - Integridade de Valores |
+| **Implementação**: Validações em `apps.notas.services.NotaFiscalService`, `apps.financeiro.serializers`, e constraints de DB quando aplicáveis |
+| **O que faz / observações**: Garante `LancamentoFinanceiro.valor == NotaFiscal.valor_total` antes do commit; divergências abortam a transação e marcam o job como FALHA. |
+
+| RN010 - Proteção de Dados Relacionados (PROTECT) |
+| **Implementação**: `on_delete=PROTECT` em FKs (`parceiros`, `empresas`, `classificadores`, `jobs`) definido nas models/migrations |
+| **O que faz / observações**: Impede exclusões que quebrarem a integridade referencial; restrições aplicadas no modelo e no banco. |
+
+| RN011 - Atualização Automática de Parceiros |
+| **Implementação**: `apps.notas.services.NotaFiscalService._get_or_create_parceiro`, `apps.parceiros.models` (auditoria) |
+| **O que faz / observações**: Quando detectada divergência (nome/tipo), o serviço atualiza o `Parceiro` existente e registra metadados de auditoria. |
+
+| RN012 - Segurança de Identificadores |
+| **Implementação**: Uso de `UUIDField` em modelos (`MinhaEmpresa`, `JobProcessamento`, `NotaFiscal`, `LancamentoFinanceiro`) e serializers controlando exposição |
+| **O que faz / observações**: Endpoints públicos expõem UUIDs; IDs numéricos internos mantidos privados. Conferir `models` e `serializers` para detalhes. |
+
+| RN013 - Processamento Assíncrono Obrigatório |
+| **Implementação**: `apps.processamento.views.ProcessarNotaFiscalView`, `apps.processamento.publishers`, Celery config em `backend/celery.py`, tasks em `apps.processamento.tasks` |
+| **O que faz / observações**: Upload retorna `202` com UUID; processamento é realizado por worker Celery; cliente consulta status via `GET /api/jobs/<uuid>/`. |
+
+| RN014 - Filtros de Consulta Financeira |
+| **Implementação**: `apps.financeiro.views` (ListViews), filtros/queries em selectors (`apps.financeiro.selectors`) e `apps.financeiro.serializers` |
+| **O que faz / observações**: `/api/contas-a-pagar/` e `/api/contas-a-receber/` aplicam filtros (TIPO_LANCAMENTO, STATUS) e ordenação por `data_vencimento`. |
+
+| RN015 - Transacionalidade de Processamento |
+| **Implementação**: `apps.notas.services.NotaFiscalService` (uso de `transaction.atomic`), tratamento de exceções nas tasks Celery (`processar_nota_fiscal_task`) |
+| **O que faz /observações**: Toda criação de `NotaFiscal` + `LancamentoFinanceiro` é executada dentro de uma transação; em caso de erro, é executado rollback e o job é marcado como FALHA. |
 
 Anexos e referências detalhadas: consulte os arquivos em `docs/` mencionados ao longo do relatório.

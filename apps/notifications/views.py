@@ -66,14 +66,14 @@ class AcknowledgeNotificationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        nid = request.data.get('id')
-        if not nid:
-            return Response({'detail': 'id required'}, status=status.HTTP_400_BAD_REQUEST)
+        notification_uuid = request.data.get('uuid')
+        if not notification_uuid:
+            return Response({'detail': 'uuid required'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Standard user
         if getattr(request.user, 'is_authenticated', False) and hasattr(request.user, 'id'):
             try:
-                notif = Notification.objects.get(pk=nid, user=request.user)
+                notif = Notification.objects.get(uuid=notification_uuid, user=request.user)
             except Notification.DoesNotExist:
                 return Response({'detail': 'not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -88,7 +88,7 @@ class AcknowledgeNotificationView(APIView):
             if not device.user_id:
                 return Response({'detail': 'device not linked'}, status=status.HTTP_400_BAD_REQUEST)
             try:
-                notif = Notification.objects.get(pk=nid, user_id=device.user_id)
+                notif = Notification.objects.get(uuid=notification_uuid, user_id=device.user_id)
             except Notification.DoesNotExist:
                 return Response({'detail': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
