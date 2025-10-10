@@ -6,6 +6,7 @@ import NotificationsService from '@/services/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,10 +35,12 @@ export default function App() {
   }, []);
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <StatusBar style="auto" />
-        <RootNavigator />
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <StatusBar style="auto" />
+          <RootNavigator />
+        </ErrorBoundary>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
