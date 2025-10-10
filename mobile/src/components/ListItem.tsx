@@ -22,7 +22,7 @@ export function ListItem({ title, subtitle, right }: { title: string; subtitle?:
     },
     subtitle: {
       ...theme.typography.caption,
-      color: theme.colors.muted,
+      color: theme.colors.placeholder,
     },
   });
 

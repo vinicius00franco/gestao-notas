@@ -1,15 +1,20 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, BackHandler, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, BackHandler, Platform, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '@/theme/ThemeProvider';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const { colors, spacing, typography, shadows } = useTheme();
 
   const entrar = (tab?: string) => {
     if (tab) {
-      navigation.navigate('MainTabs', { screen: tab });
+      navigation.navigate('App', {
+        screen: 'Main',
+        params: { screen: tab },
+      });
     } else {
-      navigation.navigate('MainTabs');
+      navigation.navigate('App');
     }
   };
 
@@ -21,35 +26,112 @@ export default function HomeScreen() {
     }
   };
 
+  const quickAccessButtons = [
+    { title: 'Dashboard', screen: 'Dashboard' },
+    { title: 'A Pagar', screen: 'Pagar' },
+    { title: 'A Receber', screen: 'Receber' },
+    { title: 'Upload', screen: 'Upload' },
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Gestão de Notas</Text>
-      <View style={styles.section}>
-        <Button title="Entrar" onPress={() => entrar()} />
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.subtitle}>Acessos rápidos</Text>
-        <View style={styles.buttonsRow}>
-          <View style={[styles.buttonItem, { marginRight: 8 }]}><Button title="Dashboard" onPress={() => entrar('Dashboard')} /></View>
-          <View style={[styles.buttonItem, { marginLeft: 8 }]}><Button title="A Pagar" onPress={() => entrar('Pagar')} /></View>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { padding: spacing.l }]}>
+        <Text style={[styles.title, typography.h1, { color: colors.primary, marginBottom: spacing.xl }]}>
+          Bem-vindo ao Gestão de Notas
+        </Text>
+        <Text style={[styles.subtitle, typography.body, { color: colors.text, marginBottom: spacing.xxl, textAlign: 'center' }]}>
+          Acesse rapidamente as principais funcionalidades do app.
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.mainButton, { backgroundColor: colors.primary, marginBottom: spacing.xl }, shadows.medium]}
+          onPress={() => entrar()}
+          activeOpacity={0.8}>
+          <Text style={[styles.mainButtonText, typography.h2, { color: colors.onPrimary }]}>Entrar no App</Text>
+        </TouchableOpacity>
+
+        <View style={styles.quickAccessContainer}>
+          {quickAccessButtons.map((button, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.quickAccessButton,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  width: '48%',
+                  marginBottom: spacing.m,
+                },
+                shadows.small,
+              ]}
+              onPress={() => entrar(button.screen)}
+              activeOpacity={0.7}>
+              <Text style={[styles.quickAccessButtonText, typography.body, { color: colors.primary }]}>
+                {button.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-        <View style={[styles.buttonsRow, { marginTop: 12 }]}>
-          <View style={[styles.buttonItem, { marginRight: 8 }]}><Button title="A Receber" onPress={() => entrar('Receber')} /></View>
-          <View style={[styles.buttonItem, { marginLeft: 8 }]}><Button title="Upload" onPress={() => entrar('Upload')} /></View>
-        </View>
+
+        <TouchableOpacity
+          style={[styles.exitButton, { marginTop: 'auto', backgroundColor: colors.error }]}
+          onPress={sairDoApp}
+          activeOpacity={0.8}>
+          <Text style={[styles.exitButtonText, { color: colors.onError }]}>Sair do App</Text>
+        </TouchableOpacity>
       </View>
-      <View style={[styles.section, { marginTop: 24 }] }>
-        <Button color="#d32f2f" title="Sair do app" onPress={sairDoApp} />
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '800', textAlign: 'center', marginBottom: 24 },
-  subtitle: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
-  section: { marginVertical: 8 },
-  buttonsRow: { flexDirection: 'row' },
-  buttonItem: { flex: 1 },
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    textAlign: 'center',
+  },
+  subtitle: {
+    textAlign: 'center',
+  },
+  mainButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+    width: '100%',
+    alignItems: 'center',
+  },
+  mainButtonText: {
+    fontWeight: 'bold',
+  },
+  quickAccessContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  quickAccessButton: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  quickAccessButtonText: {
+    fontWeight: '600',
+  },
+  exitButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  exitButtonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
