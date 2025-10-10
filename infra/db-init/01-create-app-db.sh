@@ -4,9 +4,10 @@ set -euo pipefail
 # This script runs in the Postgres container on first init (via /docker-entrypoint-initdb.d)
 # It uses env vars provided to the container: DB_NAME, DB_USER, DB_PASSWORD
 
-DB_NAME=${DB_NAME:-gestaonotas}
-DB_USER=${DB_USER:-gestaonotas}
-DB_PASSWORD=${DB_PASSWORD:-gestaonotas_pwd}
+# Fail if any of the required environment variables are not set
+: "${DB_NAME:?Please set DB_NAME}"
+: "${DB_USER:?Please set DB_USER}"
+: "${DB_PASSWORD:?Please set DB_PASSWORD}"
 
 export PGPASSWORD="$POSTGRES_PASSWORD"
 

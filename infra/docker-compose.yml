@@ -7,6 +7,7 @@ services:
       - ./db-init:/docker-entrypoint-initdb.d:ro
     env_file:
       - ./.env.db
+      - ../.env.db
     ports:
       - "${HOST_DB_PORT:-15432}:5432"
     logging:
@@ -36,7 +37,9 @@ services:
     container_name: django_api
     command: sh -c "python manage.py migrate --noinput && gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
     volumes:
-      - ..:/app
+      - ../backend:/app/backend
+      - ../apps:/app/apps
+      - ../manage.py:/app/manage.py
     env_file:
       - ../.env.common
       - ../.env.web
@@ -56,7 +59,9 @@ services:
     container_name: celery_worker
     command: celery -A backend worker -l info
     volumes:
-      - ..:/app
+      - ../backend:/app/backend
+      - ../apps:/app/apps
+      - ../manage.py:/app/manage.py
     env_file:
       - ../.env.common
       - ../.env.web
