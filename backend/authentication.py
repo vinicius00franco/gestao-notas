@@ -4,6 +4,7 @@ from rest_framework.authentication import BaseAuthentication, get_authorization_
 from rest_framework import exceptions
 from rest_framework.request import Request
 from rest_framework_simplejwt.backends import TokenBackend
+from django.conf import settings
 from apps.empresa.models import MinhaEmpresa
 
 
@@ -37,7 +38,7 @@ class EmpresaJWTAuthentication(BaseAuthentication):
 
         token = auth[1].decode('utf-8')
         try:
-            backend = TokenBackend(algorithm='HS256')
+            backend = TokenBackend(algorithm='HS256', signing_key=settings.SECRET_KEY)
             payload = backend.decode(token, verify=True)
         except Exception:
             # Not our token format; let other authenticators try

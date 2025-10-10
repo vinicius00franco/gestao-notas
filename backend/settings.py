@@ -109,6 +109,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+SIMPLE_JWT = {
+    'SIGNING_KEY': SECRET_KEY,
+}
+
 
 # CORS configuration
 # During local development, we allow all origins to simplify Web/Expo access
