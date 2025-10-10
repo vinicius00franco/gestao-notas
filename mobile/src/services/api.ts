@@ -2,29 +2,19 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// Resolve API base URL with the following priority:
-// 1) API_BASE_URL provided via app.config extra (from mobile/.env)
-// 2) If running on device (not web), derive LAN IP from Expo host and use port 80 (nginx) by default
-// 3) Fallback to localhost:8000 (useful for web)
-const extraApiBase =
-  (Constants as any)?.expoConfig?.extra?.apiBaseUrl ||
-  (Constants as any)?.manifest?.extra?.apiBaseUrl;
-
-let derivedDefault = 'http://localhost:8000';
-if (Platform.OS !== 'web') {
-  const hostUri = (Constants as any)?.expoConfig?.hostUri || (Constants as any)?.manifest?.debuggerHost;
-  const host = hostUri?.split(':')?.[0];
-  if (host) {
-    // docker-compose exposes nginx on host port 80 by default
-    derivedDefault = `http://${host}:80`;
-  }
-}
-
-const apiBaseUrl = extraApiBase || derivedDefault;
+// Resolve API base URL with priority:
+// 1. API_BASE_URL from Expo config (via .env)
+// 2. Fallback to a sensible default for local dev
+const apiBaseUrl =
+  (Constants.expoConfig?.extra?.apiBaseUrl as string) || 'http://localhost:8080';
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
   timeout: 15000,
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
 });
 
 export function setAuthToken(token?: string) {
