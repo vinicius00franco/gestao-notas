@@ -37,7 +37,7 @@ BEGIN
     ) THEN
         ALTER TABLE movimento_notas_fiscais
             ADD CONSTRAINT fk_ntf_job FOREIGN KEY (jbp_id)
-            REFERENCES movimento_jobs_processamento (jbp_id) ON DELETE PROTECT;
+            REFERENCES movimento_jobs_processamento (jbp_id) ON DELETE RESTRICT;
     END IF;
 
     -- Add foreign key to parceiros table.
@@ -47,7 +47,7 @@ BEGIN
     ) THEN
         ALTER TABLE movimento_notas_fiscais
             ADD CONSTRAINT fk_ntf_parceiro FOREIGN KEY (pcr_id)
-            REFERENCES cadastro_parceiros (pcr_id) ON DELETE PROTECT;
+            REFERENCES cadastro_parceiros (pcr_id) ON DELETE RESTRICT;
     END IF;
 
     -- Add foreign key to notas fiscais table.
