@@ -74,6 +74,15 @@ applyTo: "**"
 - Use pagination to limit response size
 - Optimize database queries
 
+### Migrations (SQL-first guidelines)
+- Prefer raw SQL migrations (use `migrations.RunSQL`) when a change must be applied atomically and idempotently across different environments (local, CI, production).
+- Write SQL migrations defensively using `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` and safe `UPDATE` statements to avoid duplicate-column or constraint errors when applying to databases that may already have parts of the schema.
+- Keep schema-changing SQL in a separate `.sql` file and load it in the migration (example pattern exists in `apps/empresa/migrations/0003_add_senha_hash.py`).
+- Avoid mixing raw SQL and Django `AddField`/`AlterField` for the same column; if you add a column with SQL, do not later add it again with Django operations.
+- When adding columns via SQL, initialize values (e.g., `UPDATE ... SET col = '' WHERE col IS NULL`) to maintain compatibility with NOT NULL constraints applied later.
+- For complex migrations that depend on data transformation, split into smaller steps: (1) add nullable column via RunSQL, (2) backfill data, (3) alter to NOT NULL using another RunSQL after verification.
+- Document the intention of each SQL migration in the migration file and include idempotency notes so other developers understand safety considerations.
+
 ## React Native Best Practices
 
 ### Component Structure
