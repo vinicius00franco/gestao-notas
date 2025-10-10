@@ -1,10 +1,11 @@
 from celery import shared_task
+from celery.exceptions import Retry
 from django.utils import timezone
 from apps.processamento.models import JobProcessamento
 from apps.notas.services import NotaFiscalService
 from apps.classificadores.models import get_classifier
 
-@shared_task
+@shared_task(autoretry_for=(Exception,), retry_backoff=True, retry_backoff_max=300, retry_jitter=True)
 def processar_nota_fiscal_task(job_id: int):
     job = JobProcessamento.objects.get(pk=job_id)
     try:

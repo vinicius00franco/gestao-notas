@@ -140,6 +140,13 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'America/Sao_Paulo'
 
+# Optional tuning (RabbitMQ efficiency)
+CELERY_WORKER_CONCURRENCY = config('CELERY_WORKER_CONCURRENCY', cast=int, default=2)
+CELERY_WORKER_PREFETCH_MULTIPLIER = config('CELERY_WORKER_PREFETCH_MULTIPLIER', cast=int, default=1)
+CELERY_TASK_ACKS_LATE = config('CELERY_TASK_ACKS_LATE', cast=bool, default=True)
+CELERY_TASK_TIME_LIMIT = config('CELERY_TASK_TIME_LIMIT', cast=int, default=600)  # hard limit 10m
+CELERY_TASK_SOFT_TIME_LIMIT = config('CELERY_TASK_SOFT_TIME_LIMIT', cast=int, default=540)  # soft 9m
+
 # --- LOGGING SETTINGS ---
 LOGGING = {
     'version': 1,

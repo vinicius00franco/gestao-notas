@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -10,14 +10,25 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Parceiro',
-            fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False, db_column='pcr_id')),
-                ('nome', models.CharField(max_length=255, db_column='pcr_nome')),
-                ('cnpj', models.CharField(max_length=18, unique=True, db_column='pcr_cnpj')),
-                ('clf_tipo', models.ForeignKey(on_delete=models.PROTECT, related_name='parceiros_tipo', to='classificadores.Classificador', db_column='clf_id_tipo')),
-            ],
-            options={'db_table': 'cadastro_parceiros'},
+        migrations.RunSQL(
+            sql=(
+                """
+                -- Create parceiros table
+                CREATE TABLE IF NOT EXISTS cadastro_parceiros (
+                    pcr_id BIGSERIAL PRIMARY KEY,
+                    pcr_nome VARCHAR(255) NOT NULL,
+                    pcr_cnpj VARCHAR(18) NOT NULL UNIQUE,
+                    clf_id_tipo BIGINT NOT NULL,
+                    CONSTRAINT fk_parceiro_tipo FOREIGN KEY (clf_id_tipo)
+                        REFERENCES geral_classificadores (clf_id)
+                        ON DELETE RESTRICT
+                );
+                """
+            ),
+            reverse_sql=(
+                """
+                DROP TABLE IF EXISTS cadastro_parceiros;
+                """
+            ),
         ),
     ]

@@ -1,5 +1,22 @@
-from django.db import migrations, models
-import uuid
+from django.db import migrations
+
+
+sql = """
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+ALTER TABLE movimento_jobs_processamento
+    ADD COLUMN IF NOT EXISTS jbp_uuid uuid DEFAULT gen_random_uuid();
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uq_jbp_uuid'
+    ) THEN
+        ALTER TABLE movimento_jobs_processamento
+            ADD CONSTRAINT uq_jbp_uuid UNIQUE (jbp_uuid);
+    END IF;
+END$$;
+"""
 
 
 class Migration(migrations.Migration):
@@ -9,9 +26,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='jobprocessamento',
-            name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='jbp_uuid'),
-        ),
+        migrations.RunSQL(sql, reverse_sql=(
+            "ALTER TABLE IF EXISTS movimento_jobs_processamento DROP CONSTRAINT IF EXISTS uq_jbp_uuid;\n"
+            "ALTER TABLE IF EXISTS movimento_jobs_processamento DROP COLUMN IF EXISTS jbp_uuid;"
+        )),
     ]

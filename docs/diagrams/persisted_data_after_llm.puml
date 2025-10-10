@@ -1,0 +1,97 @@
+@startuml persisted_data_after_llm
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+' ===============================
+' ENTIDADES PERSISTIDAS (Django)
+' ===============================
+
+package "Processamento" {
+  entity "movimento_jobs_processamento" as jbp {
+    * jbp_id : int (PK)
+    --
+    emp_id : int (FK)
+    clf_id_status : int (FK)
+    jbp_arquivo_original : varchar(255)
+    jbp_mensagem_erro : text
+    jbp_dt_conclusao : timestamptz
+    jbp_dt_criacao : timestamptz
+    jbp_dt_alteracao : timestamptz
+  }
+}
+
+package "Parceiros" {
+  entity "cadastro_parceiros" as pcr {
+    * pcr_id : int (PK)
+    --
+    clf_id_tipo : int (FK)
+    pcr_nome : varchar(255)
+    pcr_cnpj : varchar(18)
+  }
+}
+
+package "Notas" {
+  entity "movimento_notas_fiscais" as ntf {
+    * ntf_id : int (PK)
+    --
+    jbp_id : int (FK)
+    pcr_id : int (FK)
+    ntf_numero : varchar(100)
+    ntf_data_emissao : date
+    ntf_valor_total : numeric(12,2)
+  }
+
+  entity "movimento_nota_fiscal_itens" as nfi {
+    * nfi_id : int (PK)
+    --
+    ntf_id : int (FK)
+    nfi_descricao : varchar(255)
+    nfi_quantidade : numeric(10,3)
+    nfi_valor_unitario : numeric(10,2)
+    nfi_valor_total : numeric(12,2)
+  }
+}
+
+package "Financeiro" {
+  entity "movimento_lancamentos_financeiros" as lcf {
+    * lcf_id : int (PK)
+    --
+    ntf_id : int (FK)
+    clf_id_tipo : int (FK)
+    clf_id_status : int (FK)
+    lcf_descricao : varchar(255)
+    lcf_valor : numeric(10,2)
+    lcf_data_vencimento : date
+    lcf_data_pagamento : date
+    lcf_dt_criacao : timestamptz
+    lcf_dt_alteracao : timestamptz
+  }
+}
+
+package "Classificadores" {
+  entity "geral_classificadores" as clf {
+    * clf_id : int (PK)
+    --
+    clf_tipo : varchar(50)
+    clf_codigo : varchar(50)
+    clf_descricao : varchar(255)
+  }
+}
+
+' ===============================
+' RELACIONAMENTOS
+' ===============================
+
+jbp ||--|{ ntf : "1 job gera muitas notas"
+pcr ||--o{ ntf : "1 parceiro tem muitas notas"
+ntf ||--|{ nfi : "1 nota tem muitos itens"
+ntf ||--|| lcf : "1 nota tem 1 lançamento"
+
+clf <.. pcr : "tipo parceiro"
+clf <.. jbp : "status job"
+clf <.. lcf : "tipo lançamento / status"
+
+@enduml

@@ -10,3 +10,19 @@ uvicorn==0.22.0
 gunicorn[uvicorn]==21.2.0
 
 django-cors-headers==4.0.0
+
+# LLM e Processamento de Documentos
+langchain==0.1.0
+langchain-google-genai==0.0.6
+google-generativeai==0.3.2
+langchain-core==0.1.10
+
+# Processamento de PDFs e Imagens
+pypdf==3.17.4
+pdf2image==1.16.3
+Pillow==10.1.0
+pytesseract==0.3.10
+reportlab==3.6.13
+
+# Utilitários
+python-magic==0.4.27

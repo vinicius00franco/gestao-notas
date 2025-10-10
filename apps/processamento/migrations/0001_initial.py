@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -11,20 +11,32 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='JobProcessamento',
-            fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False, db_column='jbp_id')),
-                ('arquivo_original', models.FileField(upload_to='notas_fiscais_uploads/', db_column='jbp_arquivo_original')),
-                ('empresa', models.ForeignKey(on_delete=models.PROTECT, related_name='jobs', to='empresa.MinhaEmpresa', db_column='emp_id')),
-                ('status', models.ForeignKey(on_delete=models.PROTECT, related_name='jobs_status', to='classificadores.Classificador', db_column='clf_id_status')),
-                ('dt_criacao', models.DateTimeField(auto_now_add=True, db_column='jbp_dt_criacao')),
-                ('dt_alteracao', models.DateTimeField(auto_now=True, db_column='jbp_dt_alteracao')),
-                ('usr_criacao', models.IntegerField(blank=True, null=True, db_column='jbp_usr_criacao')),
-                ('usr_alteracao', models.IntegerField(blank=True, null=True, db_column='jbp_usr_alteracao')),
-                ('dt_conclusao', models.DateTimeField(blank=True, null=True, db_column='jbp_dt_conclusao')),
-                ('mensagem_erro', models.TextField(blank=True, null=True, db_column='jbp_mensagem_erro')),
-            ],
-            options={'db_table': 'movimento_jobs_processamento'},
+        migrations.RunSQL(
+            sql=(
+                """
+                -- Create table for processamento jobs
+                CREATE TABLE IF NOT EXISTS movimento_jobs_processamento (
+                    jbp_id BIGSERIAL PRIMARY KEY,
+                    jbp_arquivo_original VARCHAR(255) NOT NULL,
+                    emp_id BIGINT NOT NULL,
+                    clf_id_status BIGINT NOT NULL,
+                    jbp_dt_criacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+                    jbp_dt_alteracao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+                    jbp_usr_criacao INTEGER NULL,
+                    jbp_usr_alteracao INTEGER NULL,
+                    jbp_dt_conclusao TIMESTAMP WITH TIME ZONE NULL,
+                    jbp_mensagem_erro TEXT NULL,
+                    CONSTRAINT fk_job_empresa FOREIGN KEY (emp_id)
+                        REFERENCES cadastro_empresas (emp_id)
+                        ON DELETE RESTRICT,
+                    CONSTRAINT fk_job_status FOREIGN KEY (clf_id_status)
+                        REFERENCES geral_classificadores (clf_id)
+                        ON DELETE RESTRICT
+                );
+                """
+            ),
+            reverse_sql=(
+                "DROP TABLE IF EXISTS movimento_jobs_processamento;"
+            ),
         ),
     ]
