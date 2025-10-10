@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import FlashMessage from 'react-native-flash-message';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +40,7 @@ export default function App() {
         <ErrorBoundary>
           <StatusBar style="auto" />
           <RootNavigator />
+          <FlashMessage position="top" />
         </ErrorBoundary>
       </ThemeProvider>
     </QueryClientProvider>

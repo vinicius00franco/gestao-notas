@@ -1,12 +1,15 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, Button } from 'react-native';
 import { useDashboard } from '@/services/queries';
 import Loading from '@/components/Loading';
 import ErrorView from '@/components/ErrorView';
 import { ListItem } from '@/components/ListItem';
+import { useNavigation } from '@react-navigation/native';
 
 export default function DashboardScreen() {
   const { data, isLoading, isError, refetch } = useDashboard();
+  const navigation = useNavigation<any>();
+
   if (isLoading) return <Loading />;
   if (isError) return <ErrorView onRetry={refetch} />;
 
@@ -14,6 +17,10 @@ export default function DashboardScreen() {
 
   return (
     <View style={{ flex: 1 }}>
+      <Button
+        title="Unclassified Companies"
+        onPress={() => navigation.navigate('UnclassifiedCompanies')}
+      />
       <Text style={{ fontSize: 18, fontWeight: '700', padding: 16 }}>Top 5 Fornecedores (A Pagar)</Text>
       <FlatList
         data={fornecedores}

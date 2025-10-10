@@ -13,6 +13,8 @@ import JobStatusScreen from '@/screens/JobStatusScreen';
 import HomeScreen from '@/screens/HomeScreen';
 import { useTheme } from '@/theme/ThemeProvider';
 import CustomDrawerContent from '@/components/CustomDrawerContent';
+import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
+import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -54,6 +56,7 @@ function AppDrawer() {
       }}>
       <Drawer.Screen name="Main" component={MainTabs} options={{ title: 'Gestão de Notas' }} />
       <Drawer.Screen name="JobStatus" component={JobStatusScreen} options={{ title: 'Status do Job' }} />
+      <Drawer.Screen name="UnclassifiedCompanies" component={UnclassifiedCompaniesScreen} options={{ title: 'Unclassified Companies' }} />
     </Drawer.Navigator>
   );
 }
@@ -79,6 +82,7 @@ export default function RootNavigator() {
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="App" component={AppDrawer} options={{ headerShown: false }} />
+        <Stack.Screen name="ClassifyCompany" component={ClassifyCompanyScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

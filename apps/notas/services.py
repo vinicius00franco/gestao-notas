@@ -12,6 +12,7 @@ from apps.parceiros.observers import ValidacaoCNPJObserver
 from apps.notifications.observers import PushStoreObserver
 from decimal import Decimal, InvalidOperation
 import logging
+from apps.empresa.models import EmpresaNaoClassificada
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,11 @@ class NotaFiscalService(Subject):
             # Usa strategy para determinar tipo e parceiro
             resultado = self.tipo_lancamento_context.determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
 
+            # CNPJ não corresponde à empresa autenticada
+            if resultado['parceiro_data']['cnpj'] != minha_empresa.cnpj:
+                self._handle_unclassified_company(dados_extraidos)
+                return None
+
             parceiro = self._get_or_create_parceiro(**resultado['parceiro_data'])
 
             nota_fiscal = NotaFiscal.objects.create(
@@ -109,6 +115,24 @@ class NotaFiscalService(Subject):
         self.notify('parceiro_created_or_updated', parceiro=parceiro)
 
         return parceiro
+
+    def _handle_unclassified_company(self, dados_extraidos: InvoiceData):
+        logger.info(f"CNPJ não corresponde. Salvando como empresa não classificada: {dados_extraidos.destinatario_cnpj}")
+        EmpresaNaoClassificada.objects.update_or_create(
+            cnpj=dados_extraidos.destinatario_cnpj,
+            defaults={
+                'nome_fantasia': dados_extraidos.destinatario_nome,
+                'razao_social': dados_extraidos.destinatario_nome,
+                'uf': '',
+                'cidade': '',
+                'logradouro': '',
+                'numero': '',
+                'bairro': '',
+                'cep': '',
+                'telefone': '',
+                'email': ''
+            }
+        )
 
     # ---------------------------------------------------------------------
     # Persistência de Itens

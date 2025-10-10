@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .serializers import EmpresaLoginSerializer, EmpresaSenhaSetupSerializer
+from .models import EmpresaNaoClassificada
+from .serializers import EmpresaLoginSerializer, EmpresaSenhaSetupSerializer, EmpresaNaoClassificadaSerializer
 
 
 class EmpresaLoginView(APIView):
@@ -42,3 +42,8 @@ class EmpresaSenhaSetupView(APIView):
         ser.is_valid(raise_exception=True)
         empresa = ser.save()
         return Response({'ok': True, 'empresa': empresa.cnpj}, status=status.HTTP_201_CREATED)
+
+
+class EmpresaNaoClassificadaView(generics.ListAPIView):
+    queryset = EmpresaNaoClassificada.objects.all()
+    serializer_class = EmpresaNaoClassificadaSerializer

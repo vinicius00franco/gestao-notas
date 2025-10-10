@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from apps.classificadores.models import Classificador
 
 
 class MinhaEmpresa(models.Model):
@@ -21,3 +22,27 @@ class MinhaEmpresa(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class EmpresaNaoClassificada(models.Model):
+    id = models.BigAutoField(primary_key=True, db_column='enc_id')
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='enc_uuid')
+    cnpj = models.CharField(max_length=18, unique=True, db_column='enc_cnpj')
+    nome_fantasia = models.CharField(max_length=255, db_column='enc_nome_fantasia')
+    razao_social = models.CharField(max_length=255, db_column='enc_razao_social')
+    uf = models.CharField(max_length=2, db_column='enc_uf')
+    cidade = models.CharField(max_length=255, db_column='enc_cidade')
+    logradouro = models.CharField(max_length=255, db_column='enc_logradouro')
+    numero = models.CharField(max_length=255, db_column='enc_numero')
+    bairro = models.CharField(max_length=255, db_column='enc_bairro')
+    cep = models.CharField(max_length=9, db_column='enc_cep')
+    telefone = models.CharField(max_length=20, db_column='enc_telefone')
+    email = models.CharField(max_length=255, db_column='enc_email')
+    dt_criacao = models.DateTimeField(auto_now_add=True, db_column='enc_dt_criacao')
+
+    class Meta:
+        verbose_name_plural = "Empresas Não Classificadas"
+        db_table = "empresas_nao_classificadas"
+
+    def __str__(self):
+        return self.nome_fantasia
