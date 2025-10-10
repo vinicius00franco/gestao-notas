@@ -152,21 +152,6 @@ applyTo: "**"
 - Use TypeScript interfaces for type safety across components
 - Maintain consistent code formatting and linting rules
 
-## Docker Setup
-
-To use the access token from your Docker CLI client:
-
-Run
-```
-docker login -u vinicius1silva
-```
-2. At the password prompt, enter the personal access token.
-
-```
-<PERSONAL_ACCESS_TOKEN_REDACTED>
-```
-
-IMPORTANT: Do NOT commit tokens or secrets to the repository. If you already committed a secret, rotate the token immediately (delete/revoke it on the provider) and remove it from the commit history before pushing. Use environment variables, a secrets manager, or GitHub repository secrets to store tokens securely.
 
 ## Testing Best Practices
 
