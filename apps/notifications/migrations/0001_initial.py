@@ -1,44 +1,22 @@
-from django.db import migrations, models
-import uuid
+import os
+from django.db import migrations
 
+def read_sql_file(file_name):
+    """Reads the specified SQL file from the migrations directory."""
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    with open(file_path, 'r') as f:
+        return f.read()
 
 class Migration(migrations.Migration):
 
     initial = True
-
     dependencies = [
+        ('empresa', '0001_initial'),
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Device',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID', db_column='dvc_id')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='dvc_uuid')),
-                ('token', models.CharField(max_length=512, unique=True)),
-                ('platform', models.CharField(blank=True, choices=[('ios', 'iOS'), ('android', 'Android')], max_length=16, null=True)),
-                ('active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=models.CASCADE, to='auth.user')),
-                ('empresa', models.ForeignKey(blank=True, null=True, on_delete=models.CASCADE, to='empresa.minhaempresa')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Notification',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID', db_column='ntf_id')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='ntf_uuid')),
-                ('title', models.CharField(max_length=255)),
-                ('body', models.TextField()),
-                ('data', models.JSONField(blank=True, null=True)),
-                ('delivered', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('delivered_at', models.DateTimeField(blank=True, null=True)),
-                ('user', models.ForeignKey(on_delete=models.CASCADE, related_name='notifications', to='auth.user')),
-            ],
-            options={
-                'ordering': ['-created_at'],
-            },
+        migrations.RunSQL(
+            sql=read_sql_file('0001_initial.sql'),
+            reverse_sql="DROP TABLE IF EXISTS notifications_device; DROP TABLE IF EXISTS notifications_notification;",
         ),
     ]

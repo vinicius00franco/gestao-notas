@@ -1,30 +1,20 @@
+import os
 from django.db import migrations
 
+def read_sql_file(file_name):
+    """Reads the specified SQL file from the migrations directory."""
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    with open(file_path, 'r') as f:
+        return f.read()
 
 class Migration(migrations.Migration):
 
     initial = True
-
     dependencies = []
 
     operations = [
         migrations.RunSQL(
-            sql=(
-                """
-                -- Create table for classificadores (initial schema, without UUID)
-                CREATE TABLE IF NOT EXISTS geral_classificadores (
-                    clf_id BIGSERIAL PRIMARY KEY,
-                    clf_tipo VARCHAR(50) NOT NULL,
-                    clf_codigo VARCHAR(50) NOT NULL,
-                    clf_descricao VARCHAR(255) NOT NULL,
-                    CONSTRAINT uq_tipo_codigo UNIQUE (clf_tipo, clf_codigo)
-                );
-                """
-            ),
-            reverse_sql=(
-                """
-                DROP TABLE IF EXISTS geral_classificadores;
-                """
-            ),
+            sql=read_sql_file('0001_initial.sql'),
+            reverse_sql="DROP TABLE IF EXISTS geral_classificadores;",
         ),
     ]
