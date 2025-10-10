@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getContasAPagar, getContasAReceber, getDashboard, getJobStatus, uploadNota } from './api';
+import { api, getContasAPagar, getContasAReceber, getDashboard, getJobStatus, uploadNota } from './api';
 
 export const queryKeys = {
   contasAPagar: ['contasAPagar'] as const,
   contasAReceber: ['contasAReceber'] as const,
   dashboard: ['dashboard'] as const,
   jobStatus: (uuid: string) => ['jobStatus', uuid] as const,
+  unclassifiedCompanies: ['unclassifiedCompanies'] as const,
 };
 
 export function useContasAPagar() {
@@ -41,6 +42,16 @@ export function useUploadNota() {
       qc.invalidateQueries({ queryKey: queryKeys.contasAPagar });
       qc.invalidateQueries({ queryKey: queryKeys.contasAReceber });
       qc.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+}
+
+export function useClassifyCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (company: any) => api.put(`/api/unclassified-companies/${company.id}/`, company),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.unclassifiedCompanies });
     },
   });
 }

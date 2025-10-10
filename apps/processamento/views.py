@@ -13,7 +13,6 @@ class ProcessarNotaFiscalView(views.APIView):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        # Tratar CNPJ inexistente
         try:
             empresa = MinhaEmpresa.objects.get(cnpj=validated_data['meu_cnpj'])
         except MinhaEmpresa.DoesNotExist:
@@ -29,10 +28,12 @@ class ProcessarNotaFiscalView(views.APIView):
             status=status_pendente,
         )
         CeleryTaskPublisher().publish_processamento_nota(job_id=job.id)
+
         return Response({
-            "uuid": str(job.uuid),
-            "status": {"codigo": job.status.codigo, "descricao": job.status.descricao}
+            "message": "Upload recebido com sucesso. O processamento foi iniciado.",
+            "job_uuid": str(job.uuid)
         }, status=status.HTTP_202_ACCEPTED)
+
 
 class JobStatusView(generics.RetrieveAPIView):
     queryset = JobProcessamento.objects.all()

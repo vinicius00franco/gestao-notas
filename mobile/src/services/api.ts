@@ -52,6 +52,8 @@ export const endpoints = {
   contasAPagar: '/api/contas-a-pagar/',
   contasAReceber: '/api/contas-a-receber/',
   dashboard: '/api/dashboard/',
+  unclassifiedCompanies: '/api/unclassified-companies/',
+  updateUnclassifiedCompany: (id: number) => `/api/unclassified-companies/${id}/`,
 };
 
 export const uploadNota = async (
@@ -64,7 +66,7 @@ export const uploadNota = async (
   const res = await api.post(endpoints.processarNota, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return res.data as { uuid: string; status: { codigo: string; descricao: string } };
+  return res.data as { message: string; job_uuid: string };
 };
 
 export const getJobStatus = async (uuid: string) => {

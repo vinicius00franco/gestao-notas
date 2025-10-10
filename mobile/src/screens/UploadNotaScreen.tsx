@@ -3,6 +3,7 @@ import { View, Text, Button, TextInput, Platform } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useUploadNota } from '@/services/queries';
+import { showMessage } from 'react-native-flash-message';
 
 export default function UploadNotaScreen() {
   const [cnpj, setCnpj] = useState('');
@@ -20,8 +21,19 @@ export default function UploadNotaScreen() {
 
   async function onSubmit() {
     if (!file || !cnpj) return;
-    const out = await mutateAsync({ file, meu_cnpj: cnpj });
-    nav.navigate('JobStatus', { uuid: out.uuid });
+    try {
+      const out = await mutateAsync({ file, meu_cnpj: cnpj });
+      showMessage({
+        message: out.message,
+        type: 'success',
+      });
+      nav.navigate('JobStatus', { uuid: out.job_uuid });
+    } catch (error: any) {
+      showMessage({
+        message: error.response?.data?.detail || 'An error occurred',
+        type: 'danger',
+      });
+    }
   }
 
   return (

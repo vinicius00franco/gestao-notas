@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password, make_password
-from .models import MinhaEmpresa
+from .models import MinhaEmpresa, EmpresaNaoClassificada
 
 
 class EmpresaLoginSerializer(serializers.Serializer):
@@ -43,3 +43,9 @@ class EmpresaSenhaSetupSerializer(serializers.ModelSerializer):
         empresa.senha_hash = make_password(senha)
         empresa.save(update_fields=['senha_hash'])
         return empresa
+
+
+class EmpresaNaoClassificadaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmpresaNaoClassificada
+        fields = '__all__'
