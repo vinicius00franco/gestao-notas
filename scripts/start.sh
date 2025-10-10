@@ -131,5 +131,9 @@ done || true
 echo
 echo "Ambiente iniciado. Acesse: http://localhost:8000/"
 echo "Para visualizar logs: tail -f django.log celery.log"
+echo
+echo "Para iniciar o aplicativo mobile, execute os seguintes comandos em um novo terminal:"
+echo "cd mobile && npm install && npm start"
+echo
 
 exit 0
