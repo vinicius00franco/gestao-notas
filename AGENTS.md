@@ -151,3 +151,23 @@ applyTo: "**"
 - Implement proper error boundaries and fallback UI
 - Use TypeScript interfaces for type safety across components
 - Maintain consistent code formatting and linting rules
+
+## Docker Setup
+
+To use the access token from your Docker CLI client:
+
+Run
+```
+docker login -u vinicius1silva
+```
+2. At the password prompt, enter the personal access token.
+
+```
+<PERSONAL_ACCESS_TOKEN_REDACTED>
+```
+
+IMPORTANT: Do NOT commit tokens or secrets to the repository. If you already committed a secret, rotate the token immediately (delete/revoke it on the provider) and remove it from the commit history before pushing. Use environment variables, a secrets manager, or GitHub repository secrets to store tokens securely.
+
+## Testing Best Practices
+
+Usar o banco de dados real mesmo para teste com diferença de usar transacoes no banco dados para modificar os dados e depois roolback em caso de testes dos endpoints e usar o banco de dados real (e nao de dteste ou algo do tipo) para criar as estruturas das tabelas
