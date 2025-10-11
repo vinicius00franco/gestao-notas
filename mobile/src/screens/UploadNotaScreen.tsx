@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, Button, TextInput, Platform } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { useUploadNota } from '@/services/queries';
+import { useNavigation } from '@react-navigation/native';
+import { useUploadNota } from '../hooks/api';
+import { showMessage } from 'react-native-flash-message';
 
 export default function UploadNotaScreen() {
   const [cnpj, setCnpj] = useState('');
   const [file, setFile] = useState<{ uri: string; name: string; type: string } | null>(null);
-
-  if (process.env.NODE_ENV === 'development') {
-    // @ts-ignore
-    window.setFile = setFile;
-  }
-  const { mutate, isPending } = useUploadNota();
+  const nav = useNavigation<any>();
+  const { mutateAsync, isPending } = useUploadNota();
 
   async function pickFile() {
     const res = await DocumentPicker.getDocumentAsync({ multiple: false });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { useJobStatus } from '@/services/queries';
+import { useJobStatus } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { useRoute } from '@react-navigation/native';
 import ProgressBar from '@/components/ProgressBar';
