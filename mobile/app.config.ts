@@ -14,11 +14,21 @@ const defineConfig = () => ({
   //   resizeMode: 'contain',
   //   backgroundColor: '#ffffff'
   // },
-  ios: { supportsTablet: true },
-  android: { package: 'com.gestaonotas.mobile' },
+  ios: { 
+    supportsTablet: true,
+    bundleIdentifier: 'com.gestaonotas.mobile'
+  },
+  android: { 
+    package: 'com.gestaonotas.mobile',
+    adaptiveIcon: {
+      backgroundColor: '#FFFFFF'
+    }
+  },
   // web: { bundler: 'metro', output: 'static', favicon: './assets/favicon.png' },
   extra: {
     apiBaseUrl: (process as any)?.env?.API_BASE_URL || 'http://localhost:8000'
+    // Note: projectId will be added automatically by 'eas init' or you can add it manually
+    // after creating an Expo account and project at https://expo.dev
   }
 });
 

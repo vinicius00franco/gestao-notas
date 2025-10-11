@@ -23,6 +23,28 @@ Notifications.setNotificationHandler({
 
 export async function configureNotifications({ onNotification }: { onNotification?: (n: any) => void } = {}) {
   try {
+    // Skip notification configuration in Expo Go since push notifications are not fully supported
+    // Local notifications still work, but remote push notifications require a development build
+    if (__DEV__) {
+      console.log('Running in development mode. Push notifications require a development build.');
+      console.log('Local notifications are still available.');
+      
+      // Set up local notification listeners only
+      const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+        if (onNotification) onNotification(notification);
+      });
+
+      const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+        if (onNotification) onNotification(response.notification);
+      });
+
+      // Store listeners for cleanup if needed
+      (global as any).__notificationListeners = { notificationListener, responseListener };
+      
+      return;
+    }
+
+    // Production build configuration (requires development build or standalone app)
     // Request permissions
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -37,10 +59,14 @@ export async function configureNotifications({ onNotification }: { onNotificatio
       return;
     }
 
-    // Get push token
-    const token = await Notifications.getExpoPushTokenAsync();
-    CURRENT_DEVICE_TOKEN = token.data;
-    await registerDeviceToken(token.data, Platform.OS);
+    // Get push token - only works in development builds or standalone apps
+    try {
+      const token = await Notifications.getExpoPushTokenAsync();
+      CURRENT_DEVICE_TOKEN = token.data;
+      await registerDeviceToken(token.data, Platform.OS);
+    } catch (tokenError) {
+      console.warn('Failed to get push token. This is expected in Expo Go.', tokenError);
+    }
 
     // Set up notification listener
     const notificationListener = Notifications.addNotificationReceivedListener(notification => {
