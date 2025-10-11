@@ -19,50 +19,68 @@ const NOTIF_CHANNEL_ID = 'gestao-notas-general';
 let CURRENT_DEVICE_TOKEN: string | undefined;
 
 export function configureNotifications({onNotification}: {onNotification?: (n: any) => void} = {}) {
-  // create channel for Android
-  if (Platform.OS === 'android') {
-    PushNotification.createChannel(
-      {
-        channelId: NOTIF_CHANNEL_ID,
-        channelName: 'Gestão de Notas',
-        importance: Importance.HIGH,
-        vibrate: true,
-      },
-      (created) => {
-        // console.log(`createChannel returned '${created}'`);
-      }
-    );
+  // Defensive: the native PushNotification module is not available when running
+  // inside Expo Go. Check presence of native functions before calling them.
+  const hasCreateChannel = !!PushNotification && typeof (PushNotification as any).createChannel === 'function';
+  const hasConfigure = !!PushNotification && typeof (PushNotification as any).configure === 'function';
+
+  if (Platform.OS === 'android' && hasCreateChannel) {
+    try {
+      PushNotification.createChannel(
+        {
+          channelId: NOTIF_CHANNEL_ID,
+          channelName: 'Gestão de Notas',
+          importance: Importance.HIGH,
+          vibrate: true,
+        },
+        (created) => {
+          // channel created (or already existed)
+        }
+      );
+    } catch (err) {
+      console.warn('Failed to create notification channel', err);
+    }
+  } else if (Platform.OS === 'android' && !hasCreateChannel) {
+    console.warn('PushNotification native module not available: skipping createChannel. If you are using Expo Go, migrate to expo-notifications or use a dev client/EAS build.');
   }
 
-  PushNotification.configure({
-    // (optional) Called when Token is generated (iOS and Android)
-    onRegister: function (token) {
-      // token: { os: 'ios'|'android', token: '...' }
-      // Send token to server
-      CURRENT_DEVICE_TOKEN = token.token;
-      registerDeviceToken(token.token, token.os).catch(() => {});
-    },
+  if (hasConfigure) {
+    try {
+      PushNotification.configure({
+        // (optional) Called when Token is generated (iOS and Android)
+        onRegister: function (token) {
+          // token: { os: 'ios'|'android', token: '...' }
+          // Send token to server
+          CURRENT_DEVICE_TOKEN = token.token;
+          registerDeviceToken(token.token, token.os).catch(() => {});
+        },
 
-    // (required) Called when a remote or local notification is opened or received
-    onNotification: function (notification) {
-      if (onNotification) onNotification(notification);
-      // Required on iOS only (see library docs)
-      notification.finish && notification.finish(PushNotification.FetchResult.NoData);
-    },
+        // (required) Called when a remote or local notification is opened or received
+        onNotification: function (notification) {
+          if (onNotification) onNotification(notification);
+          // Required on iOS only (see library docs)
+          notification.finish && notification.finish(PushNotification.FetchResult.NoData);
+        },
 
-    // Android only: GCM or FCM Sender ID (deprecated in modern FCM usage)
-    senderID: undefined,
+        // Android only: GCM or FCM Sender ID (deprecated in modern FCM usage)
+        senderID: undefined,
 
-    // IOS only
-    permissions: {
-      alert: true,
-      badge: true,
-      sound: true,
-    },
+        // IOS only
+        permissions: {
+          alert: true,
+          badge: true,
+          sound: true,
+        },
 
-    popInitialNotification: true,
-    requestPermissions: true,
-  });
+        popInitialNotification: true,
+        requestPermissions: true,
+      });
+    } catch (err) {
+      console.warn('PushNotification.configure failed', err);
+    }
+  } else {
+    console.warn('PushNotification native module not available: skipping configure. If you are using Expo Go, migrate to expo-notifications or use a dev client/EAS build.');
+  }
 }
 
 export async function registerDeviceToken(token: string, platform?: string) {
@@ -77,15 +95,24 @@ export async function registerDeviceToken(token: string, platform?: string) {
 }
 
 export function localNotify({title, message, data}: {title: string; message: string; data?: any}) {
-  PushNotification.localNotification({
-    channelId: NOTIF_CHANNEL_ID,
-    title,
-    message,
-    smallIcon: 'ic_notification',
-    playSound: true,
-    soundName: 'default',
-    userInfo: data,
-  });
+  if (!!PushNotification && typeof (PushNotification as any).localNotification === 'function') {
+    try {
+      PushNotification.localNotification({
+        channelId: NOTIF_CHANNEL_ID,
+        title,
+        message,
+        smallIcon: 'ic_notification',
+        playSound: true,
+        soundName: 'default',
+        userInfo: data,
+      });
+    } catch (err) {
+      console.warn('localNotify failed', err);
+    }
+  } else {
+    // Fallback: running in Expo Go (no native) — no-op or optionally show an in-app alert
+    console.warn('localNotify skipped because PushNotification native module is not available (Expo Go).');
+  }
 }
 
 // Polling-based delivery: fetch pending server-side notifications for the logged

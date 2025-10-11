@@ -15,7 +15,7 @@ const defineConfig = () => ({
   //   backgroundColor: '#ffffff'
   // },
   ios: { supportsTablet: true },
-  // android: { adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: '#ffffff' } },
+  android: { package: 'com.gestaonotas.mobile' },
   // web: { bundler: 'metro', output: 'static', favicon: './assets/favicon.png' },
   extra: {
     apiBaseUrl: (process as any)?.env?.API_BASE_URL || 'http://localhost:8000'

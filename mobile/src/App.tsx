@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { AppState } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from '@/navigation/RootNavigator';
 import NotificationsService from '@/services/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -35,14 +36,16 @@ export default function App() {
     return () => sub.remove();
   }, []);
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <ErrorBoundary>
-          <StatusBar style="auto" />
-          <RootNavigator />
-          <FlashMessage position="top" />
-        </ErrorBoundary>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <StatusBar style="auto" />
+            <RootNavigator />
+            <FlashMessage position="top" />
+          </ErrorBoundary>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

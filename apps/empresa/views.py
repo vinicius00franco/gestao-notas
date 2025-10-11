@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from .serializers import EmpresaLoginSerializer, EmpresaSenhaSetupSerializer
 from .services import EmpresaAuthService
+from .models import EmpresaNaoClassificada
+from rest_framework import generics
 
 class EmpresaLoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -40,3 +42,16 @@ class EmpresaSenhaSetupView(APIView):
         )
 
         return Response({'ok': True, 'empresa': empresa.cnpj}, status=status.HTTP_201_CREATED)
+
+class EmpresaNaoClassificadaView(generics.ListAPIView):
+    queryset = EmpresaNaoClassificada.objects.all()
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        # Simples serializer inline para listagem
+        from rest_framework import serializers
+        class EmpresaNaoClassificadaSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = EmpresaNaoClassificada
+                fields = '__all__'
+        return EmpresaNaoClassificadaSerializer
