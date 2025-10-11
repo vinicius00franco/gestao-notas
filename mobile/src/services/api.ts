@@ -57,7 +57,7 @@ export const endpoints = {
 };
 
 export const uploadNota = async (
-  vars: { file: { uri: string; name: string; type: string }; meu_cnpj: string }
+  vars: { file: { uri: string; name: string; type: string }; meu_cnpj?: string }
 ) => {
   if (process.env.NODE_ENV === 'development') {
     return Promise.resolve({
@@ -68,7 +68,9 @@ export const uploadNota = async (
   const form = new FormData();
   // @ts-ignore RN FormData compat
   form.append('arquivo', { uri: vars.file.uri, name: vars.file.name, type: vars.file.type } as any);
-  form.append('meu_cnpj', vars.meu_cnpj);
+  if (vars.meu_cnpj) {
+    form.append('meu_cnpj', vars.meu_cnpj);
+  }
   const res = await api.post(endpoints.processarNota, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });

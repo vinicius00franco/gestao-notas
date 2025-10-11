@@ -9,11 +9,20 @@ const defineConfig = () => ({
   // If you want custom icons/splash images, place them under mobile/assets and uncomment the entries below.
   // icon: './assets/icon.png', // crie os assets se desejar customizar
   userInterfaceStyle: 'automatic',
-  // splash: {
-  //   image: './assets/splash.png',
-  //   resizeMode: 'contain',
-  //   backgroundColor: '#ffffff'
-  // },
+  splash: {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#ffffff"
+  },
+  plugins: [
+    [
+      "expo-splash-screen",
+      {
+        "splash_screen_resize_mode": "contain",
+        "splash_background_color": "#ffffff"
+      }
+    ]
+  ],
   ios: { 
     supportsTablet: true,
     bundleIdentifier: 'com.gestaonotas.mobile'

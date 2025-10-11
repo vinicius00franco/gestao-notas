@@ -2,13 +2,12 @@ import React from 'react';
 import { View, FlatList, Text } from 'react-native';
 import { useContasAReceber } from '@/services/queries';
 import Loading from '@/components/Loading';
-import ErrorView from '@/components/ErrorView';
 import { ListItem } from '@/components/ListItem';
 
 export default function ContasAReceberScreen() {
   const { data, isLoading, isError, refetch } = useContasAReceber();
   if (isLoading) return <Loading />;
-  if (isError) return <ErrorView onRetry={refetch} />;
+  if (isError) throw new Error('Erro ao buscar contas a receber');
 
   return (
     <View style={{ flex: 1 }}>

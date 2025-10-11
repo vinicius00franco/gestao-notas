@@ -8,7 +8,7 @@ class JobProcessamento(models.Model):
     id = models.BigAutoField(primary_key=True, db_column='jbp_id')
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='jbp_uuid')
     arquivo_original = models.FileField(upload_to='notas_fiscais_uploads/', db_column='jbp_arquivo_original')
-    empresa = models.ForeignKey(MinhaEmpresa, on_delete=models.PROTECT, related_name='jobs', db_column='emp_id')
+    empresa = models.ForeignKey(MinhaEmpresa, on_delete=models.PROTECT, related_name='jobs', db_column='emp_id', null=True, blank=True)
     status = models.ForeignKey(Classificador, on_delete=models.PROTECT, related_name='jobs_status', db_column='clf_id_status')
     dt_criacao = models.DateTimeField(auto_now_add=True, db_column='jbp_dt_criacao')
     dt_alteracao = models.DateTimeField(auto_now=True, db_column='jbp_dt_alteracao')

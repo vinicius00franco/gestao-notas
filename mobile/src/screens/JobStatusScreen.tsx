@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { useJobStatus } from '@/services/queries';
 import Loading from '@/components/Loading';
-import ErrorView from '@/components/ErrorView';
 import { useRoute } from '@react-navigation/native';
 import ProgressBar from '@/components/ProgressBar';
 
@@ -19,7 +18,7 @@ export default function JobStatusScreen() {
 
   if (!uuid) return <Text style={{ padding: 16 }}>UUID não informado.</Text>;
   if (isLoading) return <Loading />;
-  if (isError) return <ErrorView onRetry={refetch} />;
+  if (isError) throw new Error('Erro ao buscar status do job');
 
   const progress = data?.status?.codigo ? STATUS_PROGRESS[data.status.codigo] ?? 0 : 0;
 

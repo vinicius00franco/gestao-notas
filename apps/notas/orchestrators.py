@@ -38,21 +38,41 @@ class NotaFiscalService(Subject):
         # 1. Extração de dados
         dados_extraidos = self.extraction_service.extract_data_from_job(job)
 
-        # 2. Validação
+        # 2. Se empresa não foi informada, tentar identificar
+        if job.empresa is None:
+            from apps.empresa.models import MinhaEmpresa
+            empresa = None
+            if dados_extraidos.destinatario_cnpj:
+                try:
+                    empresa = MinhaEmpresa.objects.get(cnpj=dados_extraidos.destinatario_cnpj)
+                except MinhaEmpresa.DoesNotExist:
+                    pass
+            if empresa is None and dados_extraidos.remetente_cnpj:
+                try:
+                    empresa = MinhaEmpresa.objects.get(cnpj=dados_extraidos.remetente_cnpj)
+                except MinhaEmpresa.DoesNotExist:
+                    pass
+            if empresa:
+                job.empresa = empresa
+                job.save()
+            else:
+                raise ValueError("Não foi possível identificar a empresa da nota fiscal (CNPJ não encontrado).")
+
+        # 3. Validação
         self.validator.validate_cnpj_match(dados_extraidos, job.empresa)
 
-        # 3. Determinar tipo de lançamento e dados do parceiro
+        # 4. Determinar tipo de lançamento e dados do parceiro
         resultado_strategy = self.tipo_lancamento_context.determinar_tipo_e_parceiro(
             dados_extraidos, job.empresa
         )
 
-        # 3. Criar ou atualizar parceiro
+        # 5. Criar ou atualizar parceiro
         parceiro = self.parceiro_repository.get_or_create(
             **resultado_strategy['parceiro_data']
         )
         self.notify('parceiro_created_or_updated', parceiro=parceiro)
 
-        # 4. Persistir nota fiscal e lançamento financeiro
+        # 6. Persistir nota fiscal e lançamento financeiro
         lancamento = self.persistence_service.persist_nota_e_lancamento(
             job=job,
             dados_extraidos=dados_extraidos,
@@ -60,7 +80,7 @@ class NotaFiscalService(Subject):
             tipo_lancamento=resultado_strategy['tipo_lancamento'],
         )
 
-        # 5. Notificar observers sobre o novo lançamento
+        # 7. Notificar observers sobre o novo lançamento
         self.notify('lancamento_created', lancamento=lancamento)
 
         return lancamento

@@ -22,11 +22,21 @@ export default function UploadNotaScreen() {
   }
 
   async function onSubmit() {
-    if (!file || !cnpj) return;
+    if (!file) return;
     try {
-      await mutateAsync({ file, meu_cnpj: cnpj });
-    } catch (error) {
-      // error is already handled by the hook
+      const data: any = { file };
+      if (cnpj) data.meu_cnpj = cnpj;
+      const out = await mutateAsync(data);
+      showMessage({
+        message: out.message,
+        type: 'success',
+      });
+      nav.navigate('JobStatus', { uuid: out.job_uuid });
+    } catch (error: any) {
+      showMessage({
+        message: error.response?.data?.detail || 'An error occurred',
+        type: 'danger',
+      });
     }
   }
 
@@ -34,15 +44,15 @@ export default function UploadNotaScreen() {
     <View style={{ padding: 16, gap: 12 }}>
       <Text>Selecione o arquivo da Nota Fiscal</Text>
       <Button title={file ? `Selecionado: ${file.name}` : 'Escolher arquivo'} onPress={pickFile} />
-      <Text>Informe o CNPJ da sua empresa</Text>
+      <Text>Informe o CNPJ da sua empresa (opcional)</Text>
       <TextInput
         value={cnpj}
         onChangeText={setCnpj}
-        placeholder="CNPJ"
+        placeholder="CNPJ (opcional)"
         keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'number-pad'}
         style={{ borderWidth: 1, borderColor: '#ddd', padding: 8, borderRadius: 6 }}
       />
-      <Button title={isPending ? 'Enviando...' : 'Processar Nota'} disabled={!file || !cnpj || isPending} onPress={onSubmit} />
+      <Button title={isPending ? 'Enviando...' : 'Processar Nota'} disabled={!file || isPending} onPress={onSubmit} />
     </View>
   );
 }
