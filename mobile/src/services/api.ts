@@ -59,6 +59,12 @@ export const endpoints = {
 export const uploadNota = async (
   vars: { file: { uri: string; name: string; type: string }; meu_cnpj?: string }
 ) => {
+  if (process.env.NODE_ENV === 'development') {
+    return Promise.resolve({
+      message: 'Upload successful',
+      job_uuid: 'mock-uuid',
+    });
+  }
   const form = new FormData();
   // @ts-ignore RN FormData compat
   form.append('arquivo', { uri: vars.file.uri, name: vars.file.name, type: vars.file.type } as any);
@@ -72,6 +78,12 @@ export const uploadNota = async (
 };
 
 export const getJobStatus = async (uuid: string) => {
+  if (process.env.NODE_ENV === 'development' && uuid === 'mock-uuid') {
+    return Promise.resolve({
+      uuid: 'mock-uuid',
+      status: { codigo: 'PROCESSANDO', descricao: 'Em processamento' },
+    });
+  }
   const res = await api.get(endpoints.jobStatus(uuid));
   return res.data as JobStatus;
 };
