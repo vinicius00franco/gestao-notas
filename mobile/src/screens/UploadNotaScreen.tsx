@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, Button, TextInput, Platform } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { useNavigation } from '@react-navigation/native';
 import { useUploadNota } from '@/services/queries';
-import { showMessage } from 'react-native-flash-message';
 
 export default function UploadNotaScreen() {
   const [cnpj, setCnpj] = useState('');
   const [file, setFile] = useState<{ uri: string; name: string; type: string } | null>(null);
-  const nav = useNavigation<any>();
-  const { mutateAsync, isPending } = useUploadNota();
+
+  if (process.env.NODE_ENV === 'development') {
+    // @ts-ignore
+    window.setFile = setFile;
+  }
+  const { mutate, isPending } = useUploadNota();
 
   async function pickFile() {
     const res = await DocumentPicker.getDocumentAsync({ multiple: false });
@@ -22,17 +24,9 @@ export default function UploadNotaScreen() {
   async function onSubmit() {
     if (!file || !cnpj) return;
     try {
-      const out = await mutateAsync({ file, meu_cnpj: cnpj });
-      showMessage({
-        message: out.message,
-        type: 'success',
-      });
-      nav.navigate('JobStatus', { uuid: out.job_uuid });
-    } catch (error: any) {
-      showMessage({
-        message: error.response?.data?.detail || 'An error occurred',
-        type: 'danger',
-      });
+      await mutateAsync({ file, meu_cnpj: cnpj });
+    } catch (error) {
+      // error is already handled by the hook
     }
   }
 

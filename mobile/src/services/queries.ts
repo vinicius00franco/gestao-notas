@@ -33,12 +33,28 @@ export function useDashboard() {
   });
 }
 
+import { showMessage } from 'react-native-flash-message';
+import { useNavigation } from '@react-navigation/native';
+
 export function useUploadNota() {
   const qc = useQueryClient();
+  const nav = useNavigation<any>();
   return useMutation({
     mutationFn: uploadNota,
-    onSuccess: () => {
-      // Após processar, revalidar listas e dashboard
+    onSuccess: (out) => {
+      showMessage({
+        message: out.message,
+        type: 'success',
+      });
+      nav.navigate('JobStatus', { uuid: out.job_uuid });
+    },
+    onError: (error: any) => {
+      showMessage({
+        message: error.response?.data?.detail || 'An error occurred',
+        type: 'danger',
+      });
+    },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.contasAPagar });
       qc.invalidateQueries({ queryKey: queryKeys.contasAReceber });
       qc.invalidateQueries({ queryKey: queryKeys.dashboard });
