@@ -3,6 +3,7 @@ import { View, Text, FlatList, Button } from 'react-native';
 import { useDashboard } from '@/services/queries';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import ErrorView from '@/components/ErrorView';
+import Loading from '@/components/Loading';
 import { ListItem } from '@/components/ListItem';
 import { useNavigation } from '@react-navigation/native';
 
