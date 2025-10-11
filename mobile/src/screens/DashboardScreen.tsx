@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Button } from 'react-native';
 import { useDashboard } from '@/services/queries';
+import LoadingIndicator from '@/components/LoadingIndicator';
+import ErrorView from '@/components/ErrorView';
 import Loading from '@/components/Loading';
 import { ListItem } from '@/components/ListItem';
 import { useNavigation } from '@react-navigation/native';
 
 export default function DashboardScreen() {
-  const { data, isLoading, isError, refetch } = useDashboard();
+  const { data, isError, refetch } = useDashboard();
   const navigation = useNavigation<any>();
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (isLoading) return <Loading />;
-  if (isError) throw new Error('Erro ao buscar dados do dashboard');
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Simulate loading for 2 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+
+  if (isLoading) return <LoadingIndicator fullscreen message="Carregando dashboard..." />;
+  if (isError) return <ErrorView onRetry={refetch} />;
 
   const fornecedores = data?.top_5_fornecedores_pendentes || [];
 
