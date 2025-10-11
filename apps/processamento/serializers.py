@@ -3,7 +3,7 @@ from .models import JobProcessamento
 
 class UploadNotaFiscalSerializer(serializers.Serializer):
     arquivo = serializers.FileField()
-    meu_cnpj = serializers.CharField(max_length=18, help_text="CNPJ da sua empresa (ex: 99.999.999/0001-99)")
+    meu_cnpj = serializers.CharField(max_length=18, required=False, help_text="CNPJ da sua empresa (ex: 99.999.999/0001-99)")
 
 class JobProcessamentoSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='status.codigo', read_only=True)
