@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, FlatList, Button } from 'react-native';
 import { useDashboard } from '@/services/queries';
 import Loading from '@/components/Loading';
-import ErrorView from '@/components/ErrorView';
 import { ListItem } from '@/components/ListItem';
 import { useNavigation } from '@react-navigation/native';
 
@@ -11,7 +10,7 @@ export default function DashboardScreen() {
   const navigation = useNavigation<any>();
 
   if (isLoading) return <Loading />;
-  if (isError) return <ErrorView onRetry={refetch} />;
+  if (isError) throw new Error('Erro ao buscar dados do dashboard');
 
   const fornecedores = data?.top_5_fornecedores_pendentes || [];
 

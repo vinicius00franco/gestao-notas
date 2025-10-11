@@ -1,5 +1,5 @@
 
-> gestao-notas-mobile@0.1.0 web
-> expo start --web
+> gestao-notas-mobile@0.1.0 start:tunnel
+> expo start --tunnel
 
 Starting project at /app/mobile
