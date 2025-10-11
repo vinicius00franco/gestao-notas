@@ -5,7 +5,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Picker } from '@react-native-picker/picker';
 
-const classifyCompany = async (companyData: any) => {
+interface CompanyData {
+  id: number;
+  nome_fantasia: string;
+  razao_social: string;
+  cnpj: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  cep: string;
+  telefone: string;
+  email: string;
+  classification: string;
+}
+
+const classifyCompany = async (companyData: CompanyData) => {
   const { data } = await api.put(`/api/unclassified-companies/${companyData.id}/`, companyData);
   return data;
 };
@@ -16,7 +32,7 @@ export default function ClassifyCompanyScreen() {
   const queryClient = useQueryClient();
   const { company } = route.params;
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CompanyData>({
     ...company,
     classification: 'fornecedor', // default classification
   });

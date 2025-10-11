@@ -24,6 +24,7 @@ function MainTabs() {
   const { colors } = useTheme();
   return (
     <Tab.Navigator
+      initialRouteName="Dashboard"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
@@ -79,7 +80,7 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="App">
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="App" component={AppDrawer} options={{ headerShown: false }} />
         <Stack.Screen name="ClassifyCompany" component={ClassifyCompanyScreen} />
