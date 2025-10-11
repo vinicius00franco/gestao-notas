@@ -6,6 +6,13 @@ from decimal import Decimal
 from datetime import date
 from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, field_validator
+from enum import Enum
+
+class TipoDocumento(str, Enum):
+    NF_PRODUTO = "nf_produto"
+    NF_SERVICO = "nf_servico"
+    EXTRATO_FINANCEIRO = "extrato_financeiro"
+    DESCONHECIDO = "desconhecido"
 
 
 class ItemNota(BaseModel):

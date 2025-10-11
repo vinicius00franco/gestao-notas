@@ -1,14 +1,13 @@
-# apps/financeiro/strategies.py
 import abc
 from apps.classificadores.models import get_classifier
 
 class TipoLancamentoStrategy(abc.ABC):
     @abc.abstractmethod
-    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+    def aplica(self, dados_extraidos, minha_empresa) -> dict | None:
         pass
 
 class NotaCompraStrategy(TipoLancamentoStrategy):
-    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+    def aplica(self, dados_extraidos, minha_empresa) -> dict | None:
         if dados_extraidos.destinatario_cnpj == minha_empresa.cnpj:
             return {
                 'tipo_lancamento': get_classifier('TIPO_LANCAMENTO', 'PAGAR'),
@@ -18,10 +17,10 @@ class NotaCompraStrategy(TipoLancamentoStrategy):
                     'clf_tipo': get_classifier('TIPO_PARCEIRO', 'FORNECEDOR')
                 }
             }
-        raise ValueError("Nota não é de compra para esta empresa")
+        return None
 
 class NotaVendaStrategy(TipoLancamentoStrategy):
-    def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+    def aplica(self, dados_extraidos, minha_empresa) -> dict | None:
         if dados_extraidos.remetente_cnpj == minha_empresa.cnpj:
             return {
                 'tipo_lancamento': get_classifier('TIPO_LANCAMENTO', 'RECEBER'),
@@ -31,7 +30,7 @@ class NotaVendaStrategy(TipoLancamentoStrategy):
                     'clf_tipo': get_classifier('TIPO_PARCEIRO', 'CLIENTE')
                 }
             }
-        raise ValueError("Nota não é de venda desta empresa")
+        return None
 
 class TipoLancamentoContext:
     def __init__(self):
@@ -39,8 +38,7 @@ class TipoLancamentoContext:
     
     def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
         for strategy in self.strategies:
-            try:
-                return strategy.determinar_tipo_e_parceiro(dados_extraidos, minha_empresa)
-            except ValueError:
-                continue
-        raise ValueError("Nota fiscal não pertence à sua empresa (CNPJ não corresponde).")
+            resultado = strategy.aplica(dados_extraidos, minha_empresa)
+            if resultado:
+                return resultado
+        raise ValueError("Não foi possível determinar o tipo de lançamento para a nota fiscal.")

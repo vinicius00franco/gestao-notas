@@ -2,37 +2,28 @@ from rest_framework import generics, views, status
 from rest_framework.response import Response
 from .models import JobProcessamento
 from .serializers import UploadNotaFiscalSerializer, JobProcessamentoSerializer
-from .publishers import CeleryTaskPublisher
-from apps.empresa.models import MinhaEmpresa
-from apps.classificadores.models import get_classifier
+from .services import ProcessamentoService
 
 class ProcessarNotaFiscalView(views.APIView):
     serializer_class = UploadNotaFiscalSerializer
+
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        # Tratar CNPJ inexistente
+        service = ProcessamentoService()
         try:
-            empresa = MinhaEmpresa.objects.get(cnpj=validated_data['meu_cnpj'])
-        except MinhaEmpresa.DoesNotExist:
-            return Response(
-                {"detail": "Empresa com CNPJ informado não encontrada"},
-                status=status.HTTP_400_BAD_REQUEST
+            job = service.criar_job_processamento(
+                cnpj=validated_data['meu_cnpj'],
+                arquivo=validated_data['arquivo']
             )
-        
-        status_pendente = get_classifier('STATUS_JOB', 'PENDENTE')
-        job = JobProcessamento.objects.create(
-            arquivo_original=validated_data['arquivo'],
-            empresa=empresa,
-            status=status_pendente,
-        )
-        CeleryTaskPublisher().publish_processamento_nota(job_id=job.id)
-        return Response({
-            "uuid": str(job.uuid),
-            "status": {"codigo": job.status.codigo, "descricao": job.status.descricao}
-        }, status=status.HTTP_202_ACCEPTED)
+            return Response({
+                "uuid": str(job.uuid),
+                "status": {"codigo": job.status.codigo, "descricao": job.status.descricao}
+            }, status=status.HTTP_202_ACCEPTED)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class JobStatusView(generics.RetrieveAPIView):
     queryset = JobProcessamento.objects.all()
