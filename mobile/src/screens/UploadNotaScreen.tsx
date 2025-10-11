@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Button, TextInput, Platform } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useNavigation } from '@react-navigation/native';
-import { useUploadNota } from '@/services/queries';
+import { useUploadNota } from '../hooks/api';
 import { showMessage } from 'react-native-flash-message';
 
 export default function UploadNotaScreen() {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, FlatList, Text } from 'react-native';
-import { useContasAPagar } from '@/services/queries';
+import { useContasAPagar } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { ListItem } from '@/components/ListItem';
 

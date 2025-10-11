@@ -1,60 +1,36 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/services/api';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-
-interface CompanyData {
-  id: number;
-  nome_fantasia: string;
-  razao_social: string;
-  cnpj: string;
-  logradouro: string;
-  numero: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
-  telefone: string;
-  email: string;
-  classification: string;
-}
-
-const classifyCompany = async (companyData: CompanyData) => {
-  const { data } = await api.put(`/api/unclassified-companies/${companyData.id}/`, companyData);
-  return data;
-};
+import React, { useState } from 'react';
+import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useClassifyCompany } from '../hooks/api';
+import { UnclassifiedCompany } from '../types';
 
 export default function ClassifyCompanyScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-  const queryClient = useQueryClient();
   const { company } = route.params;
 
-  const [formData, setFormData] = useState<CompanyData>({
+  const [formData, setFormData] = useState<UnclassifiedCompany>({
     ...company,
     classification: 'fornecedor', // default classification
   });
 
-  const mutation = useMutation({
-    mutationFn: classifyCompany,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unclassifiedCompanies'] });
-      navigation.goBack();
-      Alert.alert('Success', 'Company classified successfully.');
-    },
-    onError: () => {
-      Alert.alert('Error', 'Failed to classify company.');
-    },
-  });
+  const { mutate: classifyCompany, isPending } = useClassifyCompany();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    mutation.mutate(formData);
+    classifyCompany(formData, {
+      onSuccess: () => {
+        navigation.goBack();
+        Alert.alert('Success', 'Company classified successfully.');
+      },
+      onError: () => {
+        Alert.alert('Error', 'Failed to classify company.');
+      },
+    });
   };
 
   return (
@@ -136,7 +112,7 @@ export default function ClassifyCompanyScreen() {
         <Picker.Item label="Outra Empresa" value="outra_empresa" />
         <Picker.Item label="Outro" value="outro" />
       </Picker>
-      <Button title="Save" onPress={handleSubmit} disabled={mutation.isPending} />
+      <Button title="Save" onPress={handleSubmit} disabled={isPending} />
     </ScrollView>
   );
 }

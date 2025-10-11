@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, Button } from 'react-native';
-import { useDashboard } from '@/services/queries';
+import { useDashboard } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { ListItem } from '@/components/ListItem';
 import { useNavigation } from '@react-navigation/native';

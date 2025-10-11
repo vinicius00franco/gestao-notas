@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, getContasAPagar, getContasAReceber, getDashboard, getJobStatus, uploadNota } from './api';
+import { getContasAPagar, getContasAReceber } from '../api/services/contasService';
+import { getDashboard } from '../api/services/dashboardService';
+import { getJobStatus, uploadNota } from '../api/services/jobService';
+import { updateUnclassifiedCompany } from '../api/services/unclassifiedCompaniesService';
+import { getUnclassifiedCompanies } from '../api/services/unclassifiedCompaniesService';
+import { JobStatus, UnclassifiedCompany } from '../types';
 
 export const queryKeys = {
   contasAPagar: ['contasAPagar'] as const,
@@ -46,10 +51,17 @@ export function useUploadNota() {
   });
 }
 
+export function useUnclassifiedCompanies() {
+  return useQuery({
+    queryKey: queryKeys.unclassifiedCompanies,
+    queryFn: getUnclassifiedCompanies,
+  });
+}
+
 export function useClassifyCompany() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (company: any) => api.put(`/api/unclassified-companies/${company.id}/`, company),
+    mutationFn: (company: UnclassifiedCompany) => updateUnclassifiedCompany(company),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.unclassifiedCompanies });
     },
@@ -61,8 +73,8 @@ export function useJobStatus(uuid?: string) {
     queryKey: queryKeys.jobStatus(uuid || ''),
     queryFn: () => getJobStatus(uuid!),
     enabled: !!uuid,
-    refetchInterval: (data: any) => {
-      const status = data?.status?.codigo as string | undefined;
+    refetchInterval: (query) => {
+      const status = query.state.data?.status?.codigo;
       // Polling rápido enquanto estiver PROCESSANDO/PENDENTE
       if (status === 'PENDENTE' || status === 'PROCESSANDO') return 2000;
       return false;
