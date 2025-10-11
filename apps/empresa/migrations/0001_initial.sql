@@ -26,7 +26,7 @@ BEGIN
         SELECT 1 FROM pg_constraint
         WHERE conname = 'uq_emp_cnpj' AND conrelid = 'cadastro_empresas'::regclass
     ) THEN
-        ALTER TABLE cadastro_empresas ADD CONSTRAINT uq_emp_cnpj UNIQUE (pcr_cnpj);
+        ALTER TABLE cadastro_empresas ADD CONSTRAINT uq_emp_cnpj UNIQUE (emp_cnpj);
     END IF;
 
     -- Add a unique constraint on the UUID field.
