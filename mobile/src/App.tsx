@@ -23,9 +23,12 @@ const queryClient = new QueryClient({
 export default function App() {
   React.useEffect(() => {
     // initialize push notifications (will register token and set listeners)
-    NotificationsService.configureNotifications();
-    // initial fetch of pending notifications
-    NotificationsService.fetchAndShowPendingNotifications();
+    const initNotifications = async () => {
+      await NotificationsService.configureNotifications();
+      // initial fetch of pending notifications
+      await NotificationsService.fetchAndShowPendingNotifications();
+    };
+    initNotifications();
 
     // listen app foreground transitions to fetch pending notifications
     const sub = AppState.addEventListener('change', (state) => {
