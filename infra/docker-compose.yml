@@ -7,6 +7,7 @@ services:
       - ./db-init:/docker-entrypoint-initdb.d:ro
     env_file:
       - ../.env.db
+      - ../.env.common
     ports:
       - "${HOST_DB_PORT:-15432}:5432"
     logging:
@@ -34,12 +35,15 @@ services:
       context: ..
       dockerfile: infra/Dockerfile
     container_name: django_api
-    command: sh -c "python manage.py migrate --noinput && gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+    command: gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
     volumes:
       - ../backend:/app/backend
       - ../apps:/app/apps
       - ../manage.py:/app/manage.py
       - ../media:/app/media
+      - ../infra/entrypoint_no_migrate.sh:/entrypoint.sh
+    ports:
+      - "8000:8000"
     env_file:
       - ../.env.common
       - ../.env.web

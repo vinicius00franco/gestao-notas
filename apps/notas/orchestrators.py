@@ -4,8 +4,8 @@ from apps.core.observers import Subject
 from apps.financeiro.models import LancamentoFinanceiro
 from apps.financeiro.strategies import TipoLancamentoContext
 from apps.parceiros.repositories import ParceiroRepository
-from .services.extraction import NotaFiscalExtractionService
-from .services.persistence import NotaFiscalPersistenceService
+from .extraction_service import NotaFiscalExtractionService
+from .persistence_service import NotaFiscalPersistenceService
 from .validators import NotaFiscalValidator
 from apps.financeiro.observers import AlertaVencimentoObserver
 from apps.dashboard.observers import MetricasFinanceirasObserver

@@ -6,6 +6,7 @@ from .services import ProcessamentoService
 
 class ProcessarNotaFiscalView(views.APIView):
     serializer_class = UploadNotaFiscalSerializer
+    permission_classes = []  # Temporário para teste
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -15,7 +16,7 @@ class ProcessarNotaFiscalView(views.APIView):
         service = ProcessamentoService()
         try:
             job = service.criar_job_processamento(
-                cnpj=validated_data['meu_cnpj'],
+                cnpj=validated_data.get('meu_cnpj'),
                 arquivo=validated_data['arquivo']
             )
             return Response({
