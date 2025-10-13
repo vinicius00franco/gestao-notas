@@ -112,8 +112,7 @@ class LLMExtractionStrategy(ExtractionStrategy):
                 data_emissao=data_emissao,
                 data_vencimento=data_vencimento,
             )
-            setattr(inv, 'produtos', getattr(doc, 'itens', []))  # Campo correto é 'itens'
-            setattr(inv, 'chave_acesso', getattr(doc, 'chave_acesso', None))
+            # Não adicionar campos extras - InvoiceData tem campos fixos
             logger.debug(f"LLM: InvoiceData criado: {inv.numero}, R$ {inv.valor_total}")
             return inv
 
@@ -146,7 +145,7 @@ class LLMExtractionStrategy(ExtractionStrategy):
                 data_emissao=data_emissao,
                 data_vencimento=data_vencimento,
             )
-            setattr(inv, 'produtos', [])
+            # Não adicionar campos extras - InvoiceData tem campos fixos
             logger.debug(f"LLM: InvoiceData criado: {inv.numero}, R$ {inv.valor_total}")
             return inv
 

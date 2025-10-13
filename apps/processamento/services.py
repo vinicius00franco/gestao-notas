@@ -2,6 +2,7 @@ import hashlib
 import logging
 from .models import JobProcessamento
 from .publishers import CeleryTaskPublisher
+from .repositories import JobProcessamentoRepository
 from apps.empresa.models import MinhaEmpresa
 from apps.classificadores.models import get_classifier
 
@@ -54,7 +55,7 @@ class ProcessamentoService:
         hash_arquivo = calcular_hash_arquivo(arquivo)
         logger.debug(f"PROCESSAMENTO: Hash calculado: {hash_arquivo}")
 
-        job_existente = JobProcessamento.objects.filter(hash_arquivo=hash_arquivo).first()
+        job_existente = JobProcessamentoRepository.find_by_hash(hash_arquivo)
         if job_existente:
             logger.info(f"PROCESSAMENTO: Job existente encontrado (ID: {job_existente.id}) - reutilizando arquivo")
             arquivo_a_salvar = job_existente.arquivo_original
@@ -65,7 +66,7 @@ class ProcessamentoService:
         status_pendente = get_classifier('STATUS_JOB', 'PENDENTE')
         logger.debug(f"PROCESSAMENTO: Status pendente: {status_pendente}")
 
-        job = JobProcessamento.objects.create(
+        job = JobProcessamentoRepository.create_job(
             arquivo_original=arquivo_a_salvar,
             hash_arquivo=hash_arquivo,
             empresa=empresa,

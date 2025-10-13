@@ -185,10 +185,9 @@ docker-compose -f infra/docker-compose.yml exec web python manage.py shell -c "f
 
 **Container Names:**
 ```
-nginx_gateway
-celery_worker
-django_api
-postgres_db
+nginx
+worker
+web
+db
 rabbitmq
-blue_app_pgadmin
 ```

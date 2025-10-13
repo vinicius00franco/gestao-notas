@@ -37,6 +37,19 @@ class TipoLancamentoContext:
         self.strategies = [NotaCompraStrategy(), NotaVendaStrategy()]
     
     def determinar_tipo_e_parceiro(self, dados_extraidos, minha_empresa):
+        # Se não há empresa associada, não podemos determinar compra/venda
+        if minha_empresa is None:
+            # Retornar tipo padrão (PAGAR) e usar destinatário como parceiro
+            from apps.classificadores.models import get_classifier
+            return {
+                'tipo_lancamento': get_classifier('TIPO_LANCAMENTO', 'PAGAR'),
+                'parceiro_data': {
+                    'cnpj': dados_extraidos.remetente_cnpj,
+                    'nome': dados_extraidos.remetente_nome,
+                    'clf_tipo': get_classifier('TIPO_PARCEIRO', 'FORNECEDOR')
+                }
+            }
+        
         for strategy in self.strategies:
             resultado = strategy.aplica(dados_extraidos, minha_empresa)
             if resultado:

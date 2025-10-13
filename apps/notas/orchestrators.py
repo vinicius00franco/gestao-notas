@@ -4,6 +4,8 @@ from apps.core.observers import Subject
 from apps.financeiro.models import LancamentoFinanceiro
 from apps.financeiro.strategies import TipoLancamentoContext
 from apps.parceiros.repositories import ParceiroRepository
+from apps.empresa.models import MinhaEmpresa, EmpresaNaoClassificada
+from apps.empresa.repositories import EmpresaRepository
 from .extraction_service import NotaFiscalExtractionService
 from .persistence_service import NotaFiscalPersistenceService
 from .validators import NotaFiscalValidator
@@ -70,16 +72,19 @@ class NotaFiscalService(Subject):
                         logger.debug(f"ORCHESTRATOR: Empresa não encontrada em MinhaEmpresa - verificando empresas não classificadas")
                         # Se não encontrou, verifica se já existe como não classificada
                         try:
-                            empresa_nao_classificada = EmpresaNaoClassificada.objects.get(cnpj_numero=cnpj_numero)
-                            logger.info(f"ORCHESTRATOR: Empresa já existe como não classificada: {empresa_nao_classificada}")
-                            # Não define empresa aqui - deixa como None para forçar criação posterior
+                            empresa_nao_classificada = EmpresaRepository.find_nao_classificada_by_cnpj(cnpj_numero)
+                            if empresa_nao_classificada:
+                                logger.info(f"ORCHESTRATOR: Empresa já existe como não classificada: {empresa_nao_classificada}")
+                                # Não define empresa aqui - deixa como None para forçar criação posterior
+                            else:
+                                raise EmpresaNaoClassificada.DoesNotExist()
                         except EmpresaNaoClassificada.DoesNotExist:
                             logger.info(f"ORCHESTRATOR: Criando empresa como não classificada")
                             # Criar empresa como não classificada (FORA da transação)
                             nome_empresa = dados_extraidos.destinatario_nome if dados_extraidos.destinatario_cnpj == cnpj_encontrado else dados_extraidos.remetente_nome
                             nome_empresa = nome_empresa or f"Empresa {cnpj_encontrado}"
 
-                            empresa_nao_classificada = EmpresaNaoClassificada(
+                            empresa_nao_classificada = EmpresaRepository.create_nao_classificada(
                                 cnpj_numero=cnpj_numero,
                                 cnpj=cnpj_encontrado,
                                 nome_fantasia=nome_empresa,
@@ -93,7 +98,6 @@ class NotaFiscalService(Subject):
                                 telefone='',
                                 email=''
                             )
-                            empresa_nao_classificada.save()  # Salvar FORA da transação
                             logger.info(f"ORCHESTRATOR: Empresa criada como não classificada: {empresa_nao_classificada} (CNPJ: {empresa_nao_classificada.cnpj})")
                             logger.info(f"ORCHESTRATOR: Usuário deve classificar esta empresa posteriormente através da interface administrativa")
 

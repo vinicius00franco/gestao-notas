@@ -30,100 +30,24 @@ class NotaFiscalRepository:
     """
 
     @staticmethod
-    def create_or_update_from_invoice(
-        invoice: InvoiceData,
-        job: JobProcessamento,
-        parceiro: Parceiro
-    ) -> NotaFiscal:
+    def create_from_invoice_data(invoice, job, parceiro) -> NotaFiscal:
         """
-        Create or update NotaFiscal from InvoiceData with idempotency.
-
-        Idempotency logic:
-        - If chave_acesso present: use it for uniqueness
-        - If no chave_acesso: use (parceiro, numero) for uniqueness
-
-        Args:
-            invoice: Extracted invoice data
-            job: Processing job that triggered extraction
-            parceiro: Partner associated with the invoice
-
-        Returns:
-            Created or updated NotaFiscal instance
-
-        Raises:
-            IntegrityError: If uniqueness constraints violated
+        Create NotaFiscal from invoice data using ORM.
         """
-        chave_acesso = getattr(invoice, 'chave_acesso', None)
-
-        with transaction.atomic():
-            # Try to find existing by chave_acesso first
-            if chave_acesso:
-                existing = NotaFiscal.objects.filter(chave_acesso=chave_acesso).first()
-                if existing:
-                    logger.info("NotaFiscal with chave_acesso %s already exists, updating", chave_acesso)
-                    return NotaFiscalRepository._update_from_invoice(existing, invoice, job, parceiro)
-
-            # If no chave_acesso or not found, check by (parceiro, numero)
-            # This respects the conditional unique constraint
-            existing = NotaFiscal.objects.filter(
-                Q(parceiro=parceiro) & Q(numero=invoice.numero) & Q(chave_acesso__isnull=True)
-            ).first()
-
-            if existing:
-                logger.info("NotaFiscal for parceiro %s numero %s already exists, updating", parceiro, invoice.numero)
-                return NotaFiscalRepository._update_from_invoice(existing, invoice, job, parceiro)
-
-            # Create new
-            logger.info("Creating new NotaFiscal for parceiro %s numero %s", parceiro, invoice.numero)
-            nota_fiscal = NotaFiscal.objects.create(
-                job_origem=job,
-                parceiro=parceiro,
-                chave_acesso=chave_acesso,
-                numero=invoice.numero,
-                data_emissao=invoice.data_emissao,
-                valor_total=invoice.valor_total,
-            )
-
-            # Create items if present
-            NotaFiscalRepository.create_items(nota_fiscal, invoice)
-
-            return nota_fiscal
+        return NotaFiscal.objects.create(
+            job_origem=job,
+            parceiro=parceiro,
+            chave_acesso=getattr(invoice, 'chave_acesso', None),
+            numero=invoice.numero,
+            data_emissao=invoice.data_emissao,
+            valor_total=invoice.valor_total,
+        )
 
     @staticmethod
-    def _update_from_invoice(
-        existing: NotaFiscal,
-        invoice: InvoiceData,
-        job: JobProcessamento,
-        parceiro: Parceiro
-    ) -> NotaFiscal:
+    def create_items_from_invoice_data(nota_fiscal: NotaFiscal, invoice) -> int:
         """
-        Update existing NotaFiscal with new data.
-        Currently just returns existing (no-op), but could be extended for updates.
+        Create NotaFiscalItem records from invoice data using ORM.
         """
-        # For now, just ensure items are present (idempotent)
-        if not existing.itens.exists():
-            NotaFiscalRepository.create_items(existing, invoice)
-
-        return existing
-
-    @staticmethod
-    def create_items(nota_fiscal: NotaFiscal, invoice: InvoiceData) -> int:
-        """
-        Create NotaFiscalItem records from invoice data.
-
-        Handles:
-        - Multiple item sources (produtos, itens)
-        - Safe decimal conversion
-        - Flexible field mapping
-
-        Args:
-            nota_fiscal: Parent NotaFiscal instance
-            invoice: InvoiceData with item information
-
-        Returns:
-            Number of items created
-        """
-        # Extract items from various possible fields
         itens = None
         if hasattr(invoice, 'produtos'):
             itens = getattr(invoice, 'produtos') or []
