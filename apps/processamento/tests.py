@@ -95,7 +95,7 @@ class ProcessarNotaFiscalTestCase(APITestCase):
         
         # Verifica relacionamento com empresa
         job = JobProcessamento.objects.get(uuid=job_uuid)
-        self.assertEqual(job.empresa, self.empresa)
+        self.assertEqual(job.empresa_cnpj, self.empresa)
 
     def test_upload_sem_arquivo(self):
         """Testa validação de arquivo obrigatório."""

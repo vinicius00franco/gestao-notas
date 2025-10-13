@@ -74,19 +74,11 @@ applyTo: "**"
 - Use pagination to limit response size
 - Optimize database queries
 
-### Migrations (SQL-first guidelines)
-- **ALWAYS convert Django-generated migrations to SQL** - Never use Django ORM operations in production
-- After running `python manage.py makemigrations`, immediately convert the generated migration to use `migrations.RunSQL`
-- Replace all `CreateModel`, `AddField`, `AlterField`, etc. with equivalent SQL statements
-- Write SQL migrations defensively using `IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, and `DROP COLUMN IF EXISTS` to avoid errors
-- Keep schema-changing SQL in separate `.sql` files and load them in migrations for better organization
-- Use idempotent SQL operations that can be run multiple times safely without errors
-- Structure SQL migrations to allow easy table modifications, deletions, and schema changes without migration conflicts
-- Initialize column values when adding NOT NULL columns: `UPDATE table SET col = 'default' WHERE col IS NULL`
-- Use `ALTER TABLE IF EXISTS` and `DROP TABLE IF EXISTS` for safe table operations
-- Document each SQL migration with comments explaining the purpose and safety considerations
-- Test SQL migrations manually before committing to ensure they work in all environments
-- **Conversion workflow**: `makemigrations` → convert to SQL → test → commit
+### Migrations (Django ORM approach)
+- Use Django's built-in migration system (`makemigrations` and `migrate`)
+- Keep migrations in sync with model changes
+- Run `makemigrations` after model changes and `migrate` to apply them
+- Use descriptive migration names when creating migrations manually
 
 ## React Native Best Practices
 

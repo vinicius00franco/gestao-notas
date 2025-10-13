@@ -22,20 +22,38 @@ class NotaFiscalExtractionService:
     def _try_extract_with_llm(self, file_content: bytes, filename: str) -> InvoiceData | None:
         ext = filename.lower().split('.')[-1]
         if ext not in ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'bmp']:
+            logger.debug(f"LLM: Extensão {ext} não suportada para arquivo {filename}")
             return None
 
         try:
+            logger.info(f"LLM: Iniciando extração para arquivo {filename}")
             from apps.notas.llm import GeminiProvider, DocumentProcessor, TipoDocumento
             llm = GeminiProvider()
             processor = DocumentProcessor(llm_provider=llm)
+            
+            logger.debug(f"LLM: Processando arquivo {filename} com {len(file_content)} bytes")
             result = processor.process_file(file_content, filename)
-
-            if not result.success or result.tipo_documento == TipoDocumento.EXTRATO_FINANCEIRO:
+            
+            logger.info(f"LLM: Processamento concluído para {filename}. Success: {result.success}, Tipo: {result.tipo_documento}")
+            
+            if not result.success:
+                logger.warning(f"LLM: Processamento falhou para {filename}: {result.error}")
+                return None
+                
+            if result.tipo_documento == TipoDocumento.EXTRATO_FINANCEIRO:
+                logger.info(f"LLM: Documento classificado como EXTRATO_FINANCEIRO, ignorando para {filename}")
                 return None
 
-            return self._adapt_llm_output(result)
+            logger.debug(f"LLM: Adaptando dados extraídos para {filename}")
+            adapted_data = self._adapt_llm_output(result)
+            if adapted_data:
+                logger.info(f"LLM: Extração bem-sucedida para {filename}: {adapted_data.numero}, R$ {adapted_data.valor_total}")
+            else:
+                logger.warning(f"LLM: Adaptação falhou para {filename}")
+            
+            return adapted_data
         except Exception as e:
-            logger.debug("Módulo LLM indisponível ou falhou: %s", e)
+            logger.error(f"LLM: Erro ao processar {filename}: {str(e)}", exc_info=True)
             return None
 
     def _adapt_llm_output(self, result) -> InvoiceData | None:

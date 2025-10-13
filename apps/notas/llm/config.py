@@ -7,7 +7,7 @@ from typing import Literal
 
 # Configurações Gemini
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
-GEMINI_MODEL = config('GEMINI_MODEL', default='gemini-1.5-flash')  # Flash Lite para custo-efetividade
+GEMINI_MODEL = config('GEMINI_MODEL', default='gemini-2.5-flash-lite')  # Modelo mais antigo e estável
 GEMINI_TEMPERATURE = float(config('GEMINI_TEMPERATURE', default='0.1'))  # Baixa para consistência
 GEMINI_MAX_TOKENS = int(config('GEMINI_MAX_TOKENS', default='8192'))
 

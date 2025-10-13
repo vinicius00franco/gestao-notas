@@ -1,10 +1,20 @@
 import uuid
 from django.db import models
+from django.core.exceptions import ValidationError
 from apps.classificadores.models import Classificador
 
 
+def cnpj_para_numero(cnpj_str):
+    """Converte CNPJ string para número inteiro."""
+    if not cnpj_str:
+        return None
+    # Remove pontos, barras e traços
+    cnpj_limpo = ''.join(filter(str.isdigit, cnpj_str))
+    return int(cnpj_limpo) if cnpj_limpo else None
+
+
 class MinhaEmpresa(models.Model):
-    id = models.BigAutoField(primary_key=True, db_column='emp_id')
+    cnpj_numero = models.BigIntegerField(primary_key=True, db_column='emp_cnpj_numero')
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='emp_uuid')
     nome = models.CharField(max_length=255, default="Minha Empresa", db_column='emp_nome')
     cnpj = models.CharField(max_length=18, unique=True, db_column='emp_cnpj')
@@ -20,12 +30,21 @@ class MinhaEmpresa(models.Model):
         verbose_name_plural = "Minha Empresa"
         db_table = "cadastro_empresas"
 
+    @classmethod
+    def get_by_cnpj(cls, cnpj_str):
+        """Busca empresa por CNPJ (string ou número)."""
+        cnpj_numero = cnpj_para_numero(cnpj_str) if isinstance(cnpj_str, str) else cnpj_str
+        try:
+            return cls.objects.get(pk=cnpj_numero)
+        except cls.DoesNotExist:
+            raise cls.DoesNotExist()
+
     def __str__(self):
         return self.nome
 
 
 class EmpresaNaoClassificada(models.Model):
-    id = models.BigAutoField(primary_key=True, db_column='enc_id')
+    cnpj_numero = models.BigIntegerField(primary_key=True, db_column='enc_cnpj_numero')
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_column='enc_uuid')
     cnpj = models.CharField(max_length=18, unique=True, db_column='enc_cnpj')
     nome_fantasia = models.CharField(max_length=255, db_column='enc_nome_fantasia')

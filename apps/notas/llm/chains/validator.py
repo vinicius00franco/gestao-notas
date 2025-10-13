@@ -41,18 +41,18 @@ class DataValidator:
         
         if not nf.emissor:
             erros_criticos.append("Dados do emissor ausentes")
-        elif not nf.emissor.cnpj:
-            avisos.append("CNPJ do emissor ausente")
+        elif not nf.emissor.cnpj_cpf:
+            avisos.append("CNPJ/CPF do emissor ausente")
         
         if not nf.destinatario:
             avisos.append("Dados do destinatário ausentes")
         
-        if not nf.produtos or len(nf.produtos) == 0:
+        if not nf.itens or len(nf.itens) == 0:
             erros_criticos.append("Nenhum produto encontrado")
         
         # Validação de produtos
-        if nf.produtos:
-            for i, produto in enumerate(nf.produtos):
+        if nf.itens:
+            for i, produto in enumerate(nf.itens):
                 erros_produto = self._validate_item(produto, i)
                 avisos.extend(erros_produto)
         
@@ -75,8 +75,8 @@ class DataValidator:
         # Campos opcionais faltantes
         if not nf.data_emissao:
             campos_faltantes.append("data_emissao")
-        if not nf.numero_nota:
-            campos_faltantes.append("numero_nota")
+        if not nf.numero:
+            campos_faltantes.append("numero")
         if nf.valor_icms is None:
             campos_faltantes.append("valor_icms")
         
@@ -313,13 +313,13 @@ class DataValidator:
         count = 0
         
         if nf.chave_acesso: count += 1
-        if nf.numero_nota: count += 1
+        if nf.numero: count += 1
         if nf.serie: count += 1
         if nf.data_emissao: count += 1
         if nf.emissor and nf.emissor.nome: count += 1
-        if nf.emissor and nf.emissor.cnpj: count += 1
+        if nf.emissor and nf.emissor.cnpj_cpf: count += 1
         if nf.destinatario and nf.destinatario.nome: count += 1
-        if nf.produtos: count += len(nf.produtos)
+        if nf.itens: count += len(nf.itens)
         if nf.valor_produtos is not None: count += 1
         if nf.valor_total is not None: count += 1
         if nf.valor_icms is not None: count += 1
@@ -330,7 +330,7 @@ class DataValidator:
         """Conta campos preenchidos em NF Serviço."""
         count = 0
         
-        if nf.numero_nota: count += 1
+        if nf.numero: count += 1
         if nf.codigo_verificacao: count += 1
         if nf.data_emissao: count += 1
         if nf.prestador and nf.prestador.nome: count += 1

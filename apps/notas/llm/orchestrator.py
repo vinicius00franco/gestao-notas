@@ -89,10 +89,11 @@ class DocumentProcessor:
         """
         try:
             # Etapa 1: Extração multimodal
-            logger.info(f"Processando arquivo: {filename}")
+            logger.info(f"LLM: Processando arquivo: {filename}")
             text, images, num_pages = self._extract_multimodal(file_bytes, filename)
             
             if not text and not images:
+                logger.warning(f"LLM: Não foi possível extrair texto ou imagens de {filename}")
                 return ProcessingResult(
                     success=False,
                     tipo_documento=None,
@@ -104,46 +105,51 @@ class DocumentProcessor:
                 )
             
             logger.info(
-                f"Extração multimodal concluída: "
-                f"texto={'sim' if text else 'não'}, "
-                f"imagens={len(images) if images else 0}"
+                f"LLM: Extração multimodal concluída para {filename}: "
+                f"texto={'sim' if text else 'não'} ({len(text) if text else 0} chars), "
+                f"imagens={len(images) if images else 0}, "
+                f"páginas={num_pages}"
             )
             
             # Etapa 2: Classificação
+            logger.debug(f"LLM: Iniciando classificação para {filename}")
             classificacao = self.classifier.classify(text=text, images=images)
             logger.info(
-                f"Documento classificado como {classificacao.tipo} "
+                f"LLM: Documento {filename} classificado como {classificacao.tipo} "
                 f"(confiança: {classificacao.confianca:.2f})"
             )
             
             if classificacao.confianca < MIN_CONFIDENCE_SCORE:
                 logger.warning(
-                    f"Confiança da classificação baixa: {classificacao.confianca:.2f} "
+                    f"LLM: Confiança da classificação baixa para {filename}: {classificacao.confianca:.2f} "
                     f"(mínimo: {MIN_CONFIDENCE_SCORE})"
                 )
             
             # Etapa 3: Extração especializada
+            logger.debug(f"LLM: Iniciando extração especializada para {filename} (tipo: {classificacao.tipo})")
             dados_extraidos = self.extractor_factory.extract(
                 tipo=classificacao.tipo,
                 text=text,
                 images=images
             )
-            logger.info("Dados extraídos com sucesso")
+            logger.info(f"LLM: Dados extraídos com sucesso para {filename}")
             
             # Etapa 4: Validação (opcional)
             validacao = None
             if self.validate_results:
+                logger.debug(f"LLM: Iniciando validação para {filename}")
                 validacao = self.validator.validate(dados_extraidos)
                 logger.info(
-                    f"Validação: {'OK' if validacao.valido else 'FALHOU'} "
+                    f"LLM: Validação para {filename}: {'OK' if validacao.valido else 'FALHOU'} "
                     f"(score: {validacao.score_confianca:.2f})"
                 )
                 
                 if not validacao.valido:
                     logger.error(
-                        f"Erros críticos na validação: {validacao.erros_criticos}"
+                        f"LLM: Erros críticos na validação para {filename}: {validacao.erros_criticos}"
                     )
             
+            logger.info(f"LLM: Processamento concluído com sucesso para {filename}")
             return ProcessingResult(
                 success=True,
                 tipo_documento=classificacao.tipo,

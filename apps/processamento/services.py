@@ -17,14 +17,25 @@ def calcular_hash_arquivo(arquivo):
     arquivo.seek(0)
     return sha256_hash.hexdigest()
 
+def cnpj_para_numero(cnpj_str):
+    """Converte CNPJ string para número inteiro."""
+    if not cnpj_str:
+        return None
+    # Remove pontos, barras e traços
+    cnpj_limpo = ''.join(filter(str.isdigit, cnpj_str))
+    return int(cnpj_limpo) if cnpj_limpo else None
+
 class ProcessamentoService:
     def criar_job_processamento(self, cnpj: str = None, arquivo=None) -> JobProcessamento:
         empresa = None
         if cnpj:
-            try:
-                empresa = MinhaEmpresa.objects.get(cnpj=cnpj)
-            except MinhaEmpresa.DoesNotExist:
-                raise ValueError("Empresa com CNPJ informado não encontrada")
+            cnpj_numero = cnpj_para_numero(cnpj)
+            if cnpj_numero:
+                try:
+                    empresa = MinhaEmpresa.get_by_cnpj(cnpj_numero)
+                except MinhaEmpresa.DoesNotExist:
+                    # CNPJ fornecido mas empresa não existe - erro
+                    raise ValueError("Empresa com CNPJ informado não encontrada")
 
         hash_arquivo = calcular_hash_arquivo(arquivo)
         job_existente = JobProcessamento.objects.filter(hash_arquivo=hash_arquivo).first()

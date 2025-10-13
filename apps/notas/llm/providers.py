@@ -86,7 +86,6 @@ class GeminiProvider(BaseLLMProvider):
         response = model.generate_content(
             gemini_parts,
             generation_config=generation_config,
-            request_options={'timeout': LLM_TIMEOUT},
         )
         
         return LLMResponse(
