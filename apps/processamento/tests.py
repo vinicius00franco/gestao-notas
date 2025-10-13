@@ -175,6 +175,43 @@ class ProcessarNotaFiscalTestCase(APITestCase):
         self.assertTrue(job.arquivo_original)
         self.assertIn('notas_fiscais_uploads', job.arquivo_original.name)
 
+    def test_upload_arquivo_duplicado(self):
+        """
+        Testa que o upload de um arquivo duplicado não salva o arquivo novamente.
+        O novo job deve apontar para o arquivo original do job existente.
+        """
+        url = reverse('processar-nota')
+
+        # Primeiro upload
+        arquivo1 = SimpleUploadedFile(
+            'nota_fiscal_duplicada.pdf',
+            b'conteudo da nota fiscal duplicada',
+            content_type='application/pdf'
+        )
+        data1 = {'arquivo': arquivo1, 'meu_cnpj': self.empresa.cnpj}
+        response1 = self.client.post(url, data1, format='multipart')
+        self.assertEqual(response1.status_code, status.HTTP_202_ACCEPTED)
+        job1_uuid = response1.data['uuid']
+        job1 = JobProcessamento.objects.get(uuid=job1_uuid)
+
+        # Segundo upload com o mesmo conteúdo
+        arquivo2 = SimpleUploadedFile(
+            'nota_fiscal_duplicada.pdf',
+            b'conteudo da nota fiscal duplicada',
+            content_type='application/pdf'
+        )
+        data2 = {'arquivo': arquivo2, 'meu_cnpj': self.empresa.cnpj}
+        response2 = self.client.post(url, data2, format='multipart')
+        self.assertEqual(response2.status_code, status.HTTP_202_ACCEPTED)
+        job2_uuid = response2.data['uuid']
+        job2 = JobProcessamento.objects.get(uuid=job2_uuid)
+
+        # Verifica que os jobs são diferentes
+        self.assertNotEqual(job1.id, job2.id)
+
+        # Verifica que o arquivo do segundo job é o mesmo do primeiro
+        self.assertEqual(job1.arquivo_original.name, job2.arquivo_original.name)
+
 
 class JobStatusTestCase(APITestCase):
     """
