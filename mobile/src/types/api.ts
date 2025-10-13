@@ -34,3 +34,17 @@ export type UnclassifiedCompany = {
   email: string;
   classification: string;
 };
+
+export type NotaFiscal = {
+  id: string;
+  numero: string;
+  valor: number;
+  cnpj_emitente: string;
+  nome_emitente: string;
+  classificacao_id: string;
+};
+
+export type Classificacao = {
+  id: string;
+  nome: string;
+};
