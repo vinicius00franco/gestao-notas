@@ -69,9 +69,6 @@ DATABASES = {
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT'),
         # Configuração para testes: usa o banco REAL com transações
-        'TEST': {
-            'NAME': config('DB_NAME'),  # Mesmo banco, não cria test_xxx
-        },
     }
 }
 

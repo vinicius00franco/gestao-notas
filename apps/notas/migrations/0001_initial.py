@@ -7,6 +7,16 @@ def read_sql_file(file_name):
     with open(file_path, 'r') as f:
         return f.read()
 
+def apply_sql(apps, schema_editor):
+    if schema_editor.connection.vendor == 'postgresql':
+        sql = read_sql_file('0001_initial.sql')
+        schema_editor.execute(sql)
+
+def unapply_sql(apps, schema_editor):
+    if schema_editor.connection.vendor == 'postgresql':
+        reverse_sql = "DROP TABLE IF EXISTS movimento_nota_fiscal_itens; DROP TABLE IF EXISTS movimento_notas_fiscais;"
+        schema_editor.execute(reverse_sql)
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -16,8 +26,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql=read_sql_file('0001_initial.sql'),
-            reverse_sql="DROP TABLE IF EXISTS movimento_nota_fiscal_itens; DROP TABLE IF EXISTS movimento_notas_fiscais;",
-        ),
+        migrations.RunPython(apply_sql, unapply_sql),
     ]
