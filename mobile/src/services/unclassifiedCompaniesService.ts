@@ -1,6 +1,6 @@
-import { api } from '../client';
-import { endpoints } from '../endpoints';
-import { UnclassifiedCompany } from '../../types';
+import { api } from '../api/client';
+import { endpoints } from '../api/endpoints';
+import { UnclassifiedCompany } from '../types';
 
 export const getUnclassifiedCompanies = async () => {
   const res = await api.get(endpoints.unclassifiedCompanies);

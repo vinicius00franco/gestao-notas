@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getContasAPagar, getContasAReceber } from '../api/services/contasService';
 import { getDashboard } from '../api/services/dashboardService';
 import { getJobStatus, uploadNota } from '../api/services/jobService';
-import { updateUnclassifiedCompany } from '../api/services/unclassifiedCompaniesService';
-import { getUnclassifiedCompanies } from '../api/services/unclassifiedCompaniesService';
-import { JobStatus, UnclassifiedCompany } from '../types';
+import { getUnclassifiedCompanies, updateUnclassifiedCompany } from '../services/unclassifiedCompaniesService';
+import { getNotasFiscais, getClassificacoes, updateNotaFiscalClassificacao } from '../services/notaFiscalService';
+import { JobStatus, UnclassifiedCompany, NotaFiscal, Classificacao } from '../types';
 
 export const queryKeys = {
   contasAPagar: ['contasAPagar'] as const,
@@ -12,6 +12,8 @@ export const queryKeys = {
   dashboard: ['dashboard'] as const,
   jobStatus: (uuid: string) => ['jobStatus', uuid] as const,
   unclassifiedCompanies: ['unclassifiedCompanies'] as const,
+  notasFiscais: ['notasFiscais'] as const,
+  classificacoes: ['classificacoes'] as const,
 };
 
 export function useContasAPagar() {
@@ -67,19 +69,27 @@ export function useUploadNota() {
   });
 }
 
-export function useUnclassifiedCompanies() {
+export function useNotasFiscais() {
   return useQuery({
-    queryKey: queryKeys.unclassifiedCompanies,
-    queryFn: getUnclassifiedCompanies,
+    queryKey: queryKeys.notasFiscais,
+    queryFn: getNotasFiscais,
   });
 }
 
-export function useClassifyCompany() {
+export function useClassificacoes() {
+  return useQuery({
+    queryKey: queryKeys.classificacoes,
+    queryFn: getClassificacoes,
+  });
+}
+
+export function useUpdateNotaFiscalClassificacao() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (company: UnclassifiedCompany) => updateUnclassifiedCompany(company),
+    mutationFn: ({ notaId, classificacaoId }: { notaId: string; classificacaoId: string }) =>
+      updateNotaFiscalClassificacao(notaId, classificacaoId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.unclassifiedCompanies });
+      qc.invalidateQueries({ queryKey: queryKeys.notasFiscais });
     },
   });
 }
@@ -94,6 +104,23 @@ export function useJobStatus(uuid?: string) {
       // Polling rápido enquanto estiver PROCESSANDO/PENDENTE
       if (status === 'PENDENTE' || status === 'PROCESSANDO') return 2000;
       return false;
+    },
+  });
+}
+
+export function useUnclassifiedCompanies() {
+  return useQuery({
+    queryKey: queryKeys.unclassifiedCompanies,
+    queryFn: getUnclassifiedCompanies,
+  });
+}
+
+export function useClassifyCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (company: UnclassifiedCompany) => updateUnclassifiedCompany(company),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.unclassifiedCompanies });
     },
   });
 }

@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Button, FlatList, Text, View } from 'react-native';
 import { useUnclassifiedCompanies } from '../hooks/api';
+import { UnclassifiedCompany } from '../types';
 
 export default function UnclassifiedCompaniesScreen() {
   const navigation = useNavigation<any>();
@@ -18,7 +19,7 @@ export default function UnclassifiedCompaniesScreen() {
   return (
     <View style={{ flex: 1, padding: 16 }}>
       <FlatList
-        data={data}
+        data={data as UnclassifiedCompany[]}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#ccc' }}>

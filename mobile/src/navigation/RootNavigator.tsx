@@ -17,6 +17,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import CustomDrawerContent from '@/components/CustomDrawerContent';
 import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
 import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
+import ClassifyNotasKanbanScreen from '@/screens/ClassifyNotasKanbanScreen';
 import Splash from '@/screens/SplashScreen';
 import { analytics } from '@/services/analytics';
 import { NavigationState } from '@react-navigation/native';
@@ -65,7 +66,7 @@ function AppDrawer() {
   return (
     <Drawer.Navigator
       drawerContent={(props: DrawerContentComponentProps) => <CustomDrawerContent {...props} />}
-      screenOptions={{
+      screenOptions={({ navigation }) => ({
         headerStyle: {
           backgroundColor: colors.primary,
         },
@@ -75,7 +76,15 @@ function AppDrawer() {
         },
         drawerActiveTintColor: colors.primary,
         drawerInactiveTintColor: colors.text,
-      }}>
+        headerLeft: () => (
+          <TouchableOpacity
+            testID="drawer-button"
+            onPress={() => navigation.openDrawer()}
+            style={{ marginLeft: 15 }}>
+            <MaterialIcons name="menu" size={24} color={colors.onPrimary} />
+          </TouchableOpacity>
+        ),
+      })}>
       <Drawer.Screen
         name="Main"
         component={MainTabs}
@@ -98,6 +107,14 @@ function AppDrawer() {
         options={{
           title: 'Unclassified Companies',
           drawerIcon: ({ color, size }) => <MaterialIcons name="business" size={size} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="ClassifyNotas"
+        component={ClassifyNotasKanbanScreen}
+        options={{
+          title: 'Classificar Notas',
+          drawerIcon: ({ color, size }) => <MaterialIcons name="class" size={size} color={color} />,
         }}
       />
     </Drawer.Navigator>
