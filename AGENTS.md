@@ -75,7 +75,9 @@ applyTo: "**"
 - Optimize database queries
 
 ### Migrations (SQL-first guidelines)
-- **ALWAYS use raw SQL migrations** (`migrations.RunSQL`) instead of Django ORM operations for maximum flexibility
+- **ALWAYS convert Django-generated migrations to SQL** - Never use Django ORM operations in production
+- After running `python manage.py makemigrations`, immediately convert the generated migration to use `migrations.RunSQL`
+- Replace all `CreateModel`, `AddField`, `AlterField`, etc. with equivalent SQL statements
 - Write SQL migrations defensively using `IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, and `DROP COLUMN IF EXISTS` to avoid errors
 - Keep schema-changing SQL in separate `.sql` files and load them in migrations for better organization
 - Use idempotent SQL operations that can be run multiple times safely without errors
@@ -83,8 +85,8 @@ applyTo: "**"
 - Initialize column values when adding NOT NULL columns: `UPDATE table SET col = 'default' WHERE col IS NULL`
 - Use `ALTER TABLE IF EXISTS` and `DROP TABLE IF EXISTS` for safe table operations
 - Document each SQL migration with comments explaining the purpose and safety considerations
-- Avoid Django ORM operations (`CreateModel`, `AddField`, etc.) as they create rigid migration dependencies
 - Test SQL migrations manually before committing to ensure they work in all environments
+- **Conversion workflow**: `makemigrations` → convert to SQL → test → commit
 
 ## React Native Best Practices
 
@@ -179,4 +181,16 @@ docker-compose -f infra/docker-compose.yml exec web python manage.py shell -c "f
 
 # Check database name
 docker-compose -f infra/docker-compose.yml exec web python manage.py shell -c "from django.db import connection; print('Database:', connection.settings_dict['NAME'])"
+```
+
+## Docker Containers
+
+**Container Names:**
+```
+nginx_gateway
+celery_worker
+django_api
+postgres_db
+rabbitmq
+blue_app_pgadmin
 ```
