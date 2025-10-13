@@ -55,3 +55,8 @@ export const deleteJob = async (uuid: string) => {
   const res = await api.delete(endpoints.jobStatus(uuid));
   return res;
 };
+
+export const listJobs = async () => {
+  const res = await api.get(endpoints.listJobs);
+  return res.data as JobStatus[];
+};
