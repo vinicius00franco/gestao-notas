@@ -12,6 +12,16 @@ from django.db.models.functions import Replace
 
 logger = logging.getLogger(__name__)
 
+
+class DuplicateInvoiceError(Exception):
+    """Erro lançado quando uma nota duplicada é detectada na validação prévia.
+
+    Essa exceção é usada para distinguir validações de duplicidade de outros
+    ValueErrors e permitir que a API retorne uma mensagem de erro amigável e
+    sem expor detalhes sensíveis (como chaves ou valores do banco).
+    """
+
+
 def calcular_hash_arquivo(arquivo):
     """
     Calcula o hash SHA-256 de um arquivo.
@@ -120,7 +130,8 @@ class ProcessamentoService:
                         logger.warning(
                             f"PROCESSAMENTO: Nota fiscal já existe para parceiro {parceiro.cnpj} e numero {numero_extraido}"
                         )
-                        raise ValueError(f"Nota fiscal já existe: parceiro={parceiro.cnpj}, numero={numero_extraido}")
+                        # Levantar exceção específica para controle pela API
+                        raise DuplicateInvoiceError("Nota fiscal duplicada detectada para o parceiro e número informados.")
                 else:
                     logger.debug("PROCESSAMENTO: Parceiro extraído não encontrado no cadastro; não validar duplicidade por parceiro")
         except ValueError:

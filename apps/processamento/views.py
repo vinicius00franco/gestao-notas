@@ -3,7 +3,7 @@ from rest_framework.response import Response
 import logging
 from .models import JobProcessamento
 from .serializers import UploadNotaFiscalSerializer, JobProcessamentoSerializer
-from .services import ProcessamentoService
+from .services import ProcessamentoService, DuplicateInvoiceError
 from .models import JobProcessamento
 from apps.classificadores.models import get_classifier
 from .tasks import processar_nota_fiscal_task
@@ -43,6 +43,13 @@ class ProcessarNotaFiscalView(views.APIView):
             }
             logger.debug(f"API: Resposta: {response_data}")
             return Response(response_data, status=status.HTTP_202_ACCEPTED)
+        except DuplicateInvoiceError as e:
+            # Mensagem amigavel e sem detalhes sensiveis
+            logger.warning(f"API: Nota duplicada detectada durante preflight: {str(e)}")
+            return Response({
+                "detail": "Uma nota igual já foi registrada para essa empresa e número. Se você acredita que isto é um erro, verifique os campos (número e CNPJ) e tente novamente.",
+                "code": "duplicate_invoice"
+            }, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             logger.warning(f"API: Erro de validação no processamento: {str(e)}")
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -108,3 +115,10 @@ class JobStatusView(generics.RetrieveDestroyAPIView):
             return Response({'detail': 'Falha ao enfileirar processamento'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({'uuid': str(instance.uuid), 'status': {'codigo': instance.status.codigo, 'descricao': instance.status.descricao}}, status=status.HTTP_202_ACCEPTED)
+
+
+class JobListView(generics.ListAPIView):
+    """Lista jobs para exibição em filas (GET /api/jobs/)."""
+    queryset = JobProcessamento.objects.all().order_by('-dt_criacao')
+    serializer_class = JobProcessamentoSerializer
+    permission_classes = []  # Temporário para teste

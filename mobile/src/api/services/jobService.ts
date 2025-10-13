@@ -20,11 +20,22 @@ export const uploadNota = async (
   if (vars.meu_cnpj) {
     form.append('meu_cnpj', vars.meu_cnpj);
   }
-  const res = await api.post(endpoints.processarNota, form);
-  const data: any = res.data || {};
-  const job_uuid: string = data.job_uuid || data.uuid;
-  const message: string = data.message || 'Arquivo enviado. Processamento iniciado.';
-  return { message, job_uuid } as { message: string; job_uuid: string };
+  try {
+    const res = await api.post(endpoints.processarNota, form);
+    const data: any = res.data || {};
+    const job_uuid: string = data.job_uuid || data.uuid;
+    const message: string = data.message || 'Arquivo enviado. Processamento iniciado.';
+    return { message, job_uuid } as { message: string; job_uuid: string };
+  } catch (err: any) {
+    // Detectar resposta estruturada de duplicidade retornada pela API
+    const responseData = err?.response?.data;
+    if (responseData && responseData.code === 'duplicate_invoice') {
+      // Jogar erro com mensagem amigavel para ser exibida na UI
+      throw new Error(responseData.detail || 'Nota duplicada detectada.');
+    }
+    // Re-throw para a camada superior lidar com outras falhas
+    throw err;
+  }
 };
 
 export const getJobStatus = async (uuid: string) => {
