@@ -15,9 +15,9 @@ const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl || defaultApiBaseUrl;
 export const api = axios.create({
   baseURL: apiBaseUrl,
   timeout: 15000,
+  // Do not force Content-Type globally; let axios set it (e.g., multipart/form-data with boundary)
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
   },
 });
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Button, Alert } from 'react-native';
 import { useJobStatus } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { useRoute } from '@react-navigation/native';
@@ -16,6 +16,36 @@ export default function JobStatusScreen() {
   const uuid = route.params?.uuid as string | undefined;
   const { data, isLoading, isError, refetch } = useJobStatus(uuid);
 
+  const jobUuid = uuid as string;
+
+  const handleReprocess = async () => {
+    try {
+      await (await import('@/api/services/jobService')).reprocessJob(jobUuid);
+      Alert.alert('Reprocessamento', 'Job re-enfileirado para processamento.');
+      refetch();
+    } catch (e: any) {
+      Alert.alert('Erro', e?.message || 'Falha ao reprocessar job');
+    }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert('Excluir job', 'Tem certeza que deseja excluir este job?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+            onPress: async () => {
+          try {
+            await (await import('@/api/services/jobService')).deleteJob(jobUuid);
+            Alert.alert('Sucesso', 'Job excluído');
+          } catch (e: any) {
+            Alert.alert('Erro', e?.message || 'Falha ao excluir job');
+          }
+        },
+      },
+    ]);
+  };
+
   if (!uuid) return <Text style={{ padding: 16 }}>UUID não informado.</Text>;
   if (isLoading) return <Loading />;
   if (isError) throw new Error('Erro ao buscar status do job');
@@ -31,6 +61,10 @@ export default function JobStatusScreen() {
       </View>
       {data?.dt_conclusao && <Text>Concluído em: {new Date(data.dt_conclusao).toLocaleString('pt-BR')}</Text>}
       {data?.erro && <Text style={{ color: 'red' }}>Erro: {data.erro}</Text>}
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="Reprocessar" onPress={handleReprocess} />
+        <Button title="Excluir" onPress={handleDelete} color="#ff3b30" />
+      </View>
     </View>
   );
 }
