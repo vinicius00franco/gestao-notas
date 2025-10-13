@@ -34,7 +34,9 @@ class NotaFiscalRepository:
         """
         Create NotaFiscal from invoice data using ORM.
         """
+        import uuid
         return NotaFiscal.objects.create(
+            uuid=uuid.uuid4(),  # Explicitly set UUID
             job_origem=job,
             parceiro=parceiro,
             chave_acesso=getattr(invoice, 'chave_acesso', None),

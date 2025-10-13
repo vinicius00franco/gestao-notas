@@ -14,6 +14,61 @@ applyTo: "**"
 - Implement proper error boundaries in React components
 - Always log errors with contextual information
 
+## Logging Standards for Refactoring and Implementation
+
+### Mandatory Logging Requirements
+- **All refactoring and new implementations MUST include relevant logs**
+- Add structured logs at key execution points (start, success, failure, important state changes)
+- Use appropriate log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- Include contextual information: user_id, request_id, operation_type, execution_time
+- Log business-critical operations and data transformations
+
+### Log Format Standards
+```python
+# Django logging example
+import logging
+logger = logging.getLogger(__name__)
+
+# Success operations
+logger.info("Operation completed", extra={
+    'operation': 'nota_fiscal_processing',
+    'job_uuid': str(job.uuid),
+    'execution_time_ms': execution_time,
+    'status': 'success'
+})
+
+# Error operations
+logger.error("Operation failed", extra={
+    'operation': 'nota_fiscal_processing',
+    'job_uuid': str(job.uuid),
+    'error': str(e),
+    'status': 'error'
+})
+```
+
+### Validation and Testing Using Grafana Logs
+- **Use Grafana dashboard (http://localhost:3000) to validate implementations**
+- Monitor logs during development and testing phases
+- Verify log patterns match expected behavior
+- Use log queries to troubleshoot issues:
+
+```
+# Monitor specific operations
+{container_name="django_api"} |= "nota_fiscal_processing"
+
+# Check error patterns
+{container_name="django_api"} |= "ERROR" |= "operation"
+
+# Monitor performance
+{container_name="django_api"} |= "execution_time_ms"
+```
+
+### Testing Validation Process
+1. **Before testing**: Check baseline logs in Grafana
+2. **During testing**: Monitor real-time logs for expected patterns
+3. **After testing**: Verify log completeness and accuracy
+4. **Error scenarios**: Ensure error logs provide sufficient debugging information
+
 ## Django REST API Best Practices
 
 ### Models
@@ -61,12 +116,26 @@ applyTo: "**"
 - Implement custom exception classes
 - Return meaningful error messages
 - Log errors for debugging
+- **MANDATORY**: Add structured logs for all API operations
+- Include request context in error logs (user, endpoint, parameters)
+- Log performance metrics for slow operations (>1s execution time)
 
 ### Testing
 - Write comprehensive unit and integration tests for models, serializers, and views
 - Use Django's TestCase and APITestCase
 - Test authentication and permissions
 - Mock external dependencies
+- **MANDATORY**: Validate test results using Grafana logs
+- Monitor log patterns during test execution
+- Verify error handling produces expected log entries
+- Use log queries to confirm test scenarios:
+  ```
+  # Test-specific logs
+  {container_name="django_api"} |= "test_" |= "operation"
+  
+  # Integration test validation
+  {container_name="django_api"} |= "integration_test"
+  ```
 
 ### Performance
 - Use select_related and prefetch_related for optimization
@@ -190,4 +259,44 @@ worker
 web
 db
 rabbitmq
+```
+
+## Celery and Async Processing Logging
+
+### Mandatory Celery Task Logging
+- **All Celery tasks MUST include comprehensive logging**
+- Log task start, progress, completion, and failure states
+- Include task_id, job_uuid, and execution context
+- Monitor worker performance and queue status
+
+### Celery Log Examples
+```python
+# Task start
+logger.info("Celery task started", extra={
+    'task_name': 'processar_nota_fiscal_task',
+    'task_id': self.request.id,
+    'job_uuid': str(job_uuid),
+    'worker': self.request.hostname
+})
+
+# Task completion
+logger.info("Celery task completed", extra={
+    'task_name': 'processar_nota_fiscal_task',
+    'task_id': self.request.id,
+    'job_uuid': str(job_uuid),
+    'execution_time_ms': execution_time,
+    'result': 'success'
+})
+```
+
+### Monitoring Celery with Grafana
+```
+# Monitor worker activity
+{container_name="celery_worker"} |= "task_name"
+
+# Check task failures
+{container_name="celery_worker"} |= "ERROR" |= "task_id"
+
+# Monitor queue performance
+{container_name="celery_worker"} |= "execution_time_ms"
 ```

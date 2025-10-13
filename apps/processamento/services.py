@@ -41,7 +41,7 @@ class ProcessamentoService:
             if cnpj_numero:
                 try:
                     empresa = MinhaEmpresa.get_by_cnpj(cnpj_numero)
-                    logger.info(f"PROCESSAMENTO: Empresa encontrada: {empresa.razao_social} (ID: {empresa.id})")
+                    logger.info(f"PROCESSAMENTO: Empresa encontrada: {empresa.nome} (ID: {empresa.pk})")
                 except MinhaEmpresa.DoesNotExist:
                     logger.warning(f"PROCESSAMENTO: Empresa com CNPJ {cnpj} não encontrada")
                     # CNPJ fornecido mas empresa não existe - erro
