@@ -19,8 +19,6 @@ import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
 import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
 import ClassifyNotasKanbanScreen from '@/screens/ClassifyNotasKanbanScreen';
 import Splash from '@/screens/SplashScreen';
-import { analytics } from '@/services/analytics';
-import { NavigationState } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -121,21 +119,6 @@ function AppDrawer() {
   );
 }
 
-const getCurrentRouteName = (state: NavigationState | undefined): string | undefined => {
-  if (!state) {
-    return undefined;
-  }
-
-  const route = state.routes[state.index];
-
-  if (route.state) {
-    // Dive into nested navigators
-    return getCurrentRouteName(route.state as NavigationState);
-  }
-
-  return route.name;
-};
-
 export default function RootNavigator() {
   const scheme = useColorScheme();
   const { colors } = useTheme();
@@ -188,14 +171,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer
-      theme={navigationTheme}
-      onReady={onLayoutRootView}
-      onStateChange={(state) => {
-        const currentRouteName = getCurrentRouteName(state);
-        analytics.trackScreenView(currentRouteName);
-      }}
-    >
+    <NavigationContainer theme={navigationTheme} onReady={onLayoutRootView}>
       <Stack.Navigator
         initialRouteName="App"
         screenOptions={{

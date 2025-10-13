@@ -7,7 +7,6 @@ DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
 INSTALLED_APPS = [
-    'django_prometheus',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -26,12 +25,9 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.classificadores',
     'apps.notifications',
-    'apps.core',
-    'apps.analytics',
 ]
 
 MIDDLEWARE = [
-    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     # Ensure CommonMiddleware comes after CorsMiddleware
     'django.middleware.security.SecurityMiddleware',
@@ -41,7 +37,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -189,19 +184,3 @@ LOGGING = {
         },
     },
 }
-
-# OpenTelemetry Configuration
-from opentelemetry import trace
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.instrumentation.django import DjangoInstrumentor
-
-trace.set_tracer_provider(TracerProvider())
-jaeger_exporter = JaegerExporter(
-    agent_host_name="jaeger",
-    agent_port=14268,
-)
-span_processor = BatchSpanProcessor(jaeger_exporter)
-trace.get_tracer_provider().add_span_processor(span_processor)
-DjangoInstrumentor().instrument()

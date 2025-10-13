@@ -7,9 +7,7 @@ from .health import healthz
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthz', healthz, name='healthz'),
-    path('', include('django_prometheus.urls')),
     path('api/', include('apps.processamento.urls')),
-    path('api/', include('apps.analytics.urls')),
     path('api/', include('apps.financeiro.urls')),
     path('api/', include('apps.dashboard.urls')),
     path('api/', include('apps.empresa.urls')),

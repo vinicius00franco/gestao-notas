@@ -4,7 +4,6 @@ import logging
 from .models import JobProcessamento
 from .serializers import UploadNotaFiscalSerializer, JobProcessamentoSerializer
 from .services import ProcessamentoService
-from apps.core.metrics import track_route_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,6 @@ class ProcessarNotaFiscalView(views.APIView):
     serializer_class = UploadNotaFiscalSerializer
     permission_classes = []  # Temporário para teste
 
-    @track_route_metrics
     def post(self, request, *args, **kwargs):
         logger.info("API: Recebida requisição POST para processar nota fiscal")
         logger.debug(f"API: Headers: {dict(request.headers)}")
