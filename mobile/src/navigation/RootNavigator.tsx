@@ -19,6 +19,17 @@ import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
 import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
 import ClassifyNotasKanbanScreen from '@/screens/ClassifyNotasKanbanScreen';
 import Splash from '@/screens/SplashScreen';
+import withErrorBoundary from '@/components/withErrorBoundary';
+
+const DashboardScreenWithErrorBoundary = withErrorBoundary(DashboardScreen);
+const ContasAPagarScreenWithErrorBoundary = withErrorBoundary(ContasAPagarScreen);
+const ContasAReceberScreenWithErrorBoundary = withErrorBoundary(ContasAReceberScreen);
+const UploadNotaScreenWithErrorBoundary = withErrorBoundary(UploadNotaScreen);
+const JobStatusScreenWithErrorBoundary = withErrorBoundary(JobStatusScreen);
+const UnclassifiedCompaniesScreenWithErrorBoundary = withErrorBoundary(UnclassifiedCompaniesScreen);
+const ClassifyCompanyScreenWithErrorBoundary = withErrorBoundary(ClassifyCompanyScreen);
+const ClassifyNotasKanbanScreenWithErrorBoundary = withErrorBoundary(ClassifyNotasKanbanScreen);
+const HomeScreenWithErrorBoundary = withErrorBoundary(HomeScreen);
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -51,10 +62,10 @@ function MainTabs() {
           return <MaterialIcons name={iconName} size={size} color={color} />;
         },
       })}>
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Pagar" component={ContasAPagarScreen} />
-      <Tab.Screen name="Receber" component={ContasAReceberScreen} />
-      <Tab.Screen name="Upload" component={UploadNotaScreen} />
+      <Tab.Screen name="Dashboard" component={DashboardScreenWithErrorBoundary} />
+      <Tab.Screen name="Pagar" component={ContasAPagarScreenWithErrorBoundary} />
+      <Tab.Screen name="Receber" component={ContasAReceberScreenWithErrorBoundary} />
+      <Tab.Screen name="Upload" component={UploadNotaScreenWithErrorBoundary} />
     </Tab.Navigator>
   );
 }
@@ -93,7 +104,7 @@ function AppDrawer() {
       />
       <Drawer.Screen
         name="JobStatus"
-        component={JobStatusScreen}
+        component={JobStatusScreenWithErrorBoundary}
         options={{
           title: 'Status do Job',
           drawerIcon: ({ color, size }) => <MaterialIcons name="sync" size={size} color={color} />,
@@ -101,7 +112,7 @@ function AppDrawer() {
       />
       <Drawer.Screen
         name="UnclassifiedCompanies"
-        component={UnclassifiedCompaniesScreen}
+        component={UnclassifiedCompaniesScreenWithErrorBoundary}
         options={{
           title: 'Unclassified Companies',
           drawerIcon: ({ color, size }) => <MaterialIcons name="business" size={size} color={color} />,
@@ -109,7 +120,7 @@ function AppDrawer() {
       />
       <Drawer.Screen
         name="ClassifyNotas"
-        component={ClassifyNotasKanbanScreen}
+        component={ClassifyNotasKanbanScreenWithErrorBoundary}
         options={{
           title: 'Classificar Notas',
           drawerIcon: ({ color, size }) => <MaterialIcons name="class" size={size} color={color} />,
@@ -178,11 +189,11 @@ export default function RootNavigator() {
           animation: 'slide_from_right',
           headerShown: false,
         }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Home" component={HomeScreenWithErrorBoundary} />
         <Stack.Screen name="App" component={AppDrawer} />
         <Stack.Screen
           name="ClassifyCompany"
-          component={ClassifyCompanyScreen}
+          component={ClassifyCompanyScreenWithErrorBoundary}
           options={{ headerShown: true }}
         />
       </Stack.Navigator>

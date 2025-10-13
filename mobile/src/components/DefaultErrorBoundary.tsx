@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ReactNode } from 'react';
 import ErrorScreen from '../screens/ErrorScreen';
 
 interface Props {
@@ -18,7 +18,7 @@ class DefaultErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: any) {
     console.error('Uncaught error:', error, errorInfo);
   }
 

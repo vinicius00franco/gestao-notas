@@ -6,7 +6,6 @@ import RootNavigator from '@/navigation/RootNavigator';
 import NotificationsService from '@/services/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
-import DefaultErrorBoundary from '@/components/DefaultErrorBoundary';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import FlashMessage from 'react-native-flash-message';
 
@@ -42,11 +41,9 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <DefaultErrorBoundary>
-            <StatusBar style="auto" />
-            <RootNavigator />
-            <FlashMessage position="top" />
-          </DefaultErrorBoundary>
+          <StatusBar style="auto" />
+          <RootNavigator />
+          <FlashMessage position="top" />
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
