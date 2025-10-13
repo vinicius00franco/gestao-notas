@@ -17,7 +17,7 @@ class ProcessamentoTaskHandler:
 
             job.status = get_classifier('STATUS_JOB', 'CONCLUIDO')
         except Exception as e:
-            job.status = get_classifier('STATUS_JOB', 'FALHA')
+            job.status = get_classifier('STATUS_JOB', 'ERRO')
             job.mensagem_erro = str(e)
         finally:
             job.dt_conclusao = timezone.now()

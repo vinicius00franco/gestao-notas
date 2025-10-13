@@ -67,6 +67,7 @@ services:
       - ../apps:/app/apps
       - ../manage.py:/app/manage.py
       - ../media:/app/media
+      - ../infra/entrypoint_no_migrate.sh:/entrypoint.sh
     env_file:
       - ../.env.common
       - ../.env.web

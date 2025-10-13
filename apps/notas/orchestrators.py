@@ -38,25 +38,35 @@ class NotaFiscalService(Subject):
         # 1. Extração de dados
         dados_extraidos = self.extraction_service.extract_data_from_job(job)
 
-        # 2. Se empresa não foi informada, tentar identificar
+        # 2. Se empresa não foi informada, tentar identificar ou criar
         if job.empresa is None:
             from apps.empresa.models import MinhaEmpresa
             empresa = None
-            if dados_extraidos.destinatario_cnpj:
+            cnpj_encontrado = dados_extraidos.destinatario_cnpj or dados_extraidos.remetente_cnpj
+            
+            if cnpj_encontrado:
                 try:
-                    empresa = MinhaEmpresa.objects.get(cnpj=dados_extraidos.destinatario_cnpj)
+                    empresa = MinhaEmpresa.objects.get(cnpj=cnpj_encontrado)
+                    logger.info(f"Empresa encontrada: {empresa} (ID: {empresa.id})")
                 except MinhaEmpresa.DoesNotExist:
-                    pass
-            if empresa is None and dados_extraidos.remetente_cnpj:
-                try:
-                    empresa = MinhaEmpresa.objects.get(cnpj=dados_extraidos.remetente_cnpj)
-                except MinhaEmpresa.DoesNotExist:
-                    pass
+                    # Criar empresa automaticamente se não existir
+                    nome_empresa = dados_extraidos.destinatario_nome if dados_extraidos.destinatario_cnpj == cnpj_encontrado else dados_extraidos.remetente_nome
+                    nome_empresa = nome_empresa or f"Empresa {cnpj_encontrado}"
+                    
+                    empresa = MinhaEmpresa(
+                        nome=nome_empresa,
+                        cnpj=cnpj_encontrado
+                    )
+                    empresa.save()  # Salvar fora da transação
+                    empresa.refresh_from_db()  # Garantir que temos o ID correto
+                    logger.info(f"Empresa criada automaticamente: {empresa} (ID: {empresa.id})")
+            
             if empresa:
                 job.empresa = empresa
-                job.save()
+                # Não salvar aqui - deixar o handler salvar no final
+                logger.info(f"Job associado à empresa: {empresa} (ID: {empresa.id})")
             else:
-                raise ValueError("Não foi possível identificar a empresa da nota fiscal (CNPJ não encontrado).")
+                raise ValueError("Não foi possível identificar ou criar a empresa da nota fiscal (CNPJ não encontrado nos dados extraídos).")
 
         # 3. Validação
         self.validator.validate_cnpj_match(dados_extraidos, job.empresa)

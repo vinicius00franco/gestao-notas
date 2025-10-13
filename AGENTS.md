@@ -75,13 +75,16 @@ applyTo: "**"
 - Optimize database queries
 
 ### Migrations (SQL-first guidelines)
-- Prefer raw SQL migrations (use `migrations.RunSQL`) when a change must be applied atomically and idempotently across different environments (local, CI, production).
-- Write SQL migrations defensively using `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` and safe `UPDATE` statements to avoid duplicate-column or constraint errors when applying to databases that may already have parts of the schema.
-- Keep schema-changing SQL in a separate `.sql` file and load it in the migration (example pattern exists in `apps/empresa/migrations/0003_add_senha_hash.py`).
-- Avoid mixing raw SQL and Django `AddField`/`AlterField` for the same column; if you add a column with SQL, do not later add it again with Django operations.
-- When adding columns via SQL, initialize values (e.g., `UPDATE ... SET col = '' WHERE col IS NULL`) to maintain compatibility with NOT NULL constraints applied later.
-- For complex migrations that depend on data transformation, split into smaller steps: (1) add nullable column via RunSQL, (2) backfill data, (3) alter to NOT NULL using another RunSQL after verification.
-- Document the intention of each SQL migration in the migration file and include idempotency notes so other developers understand safety considerations.
+- **ALWAYS use raw SQL migrations** (`migrations.RunSQL`) instead of Django ORM operations for maximum flexibility
+- Write SQL migrations defensively using `IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, and `DROP COLUMN IF EXISTS` to avoid errors
+- Keep schema-changing SQL in separate `.sql` files and load them in migrations for better organization
+- Use idempotent SQL operations that can be run multiple times safely without errors
+- Structure SQL migrations to allow easy table modifications, deletions, and schema changes without migration conflicts
+- Initialize column values when adding NOT NULL columns: `UPDATE table SET col = 'default' WHERE col IS NULL`
+- Use `ALTER TABLE IF EXISTS` and `DROP TABLE IF EXISTS` for safe table operations
+- Document each SQL migration with comments explaining the purpose and safety considerations
+- Avoid Django ORM operations (`CreateModel`, `AddField`, etc.) as they create rigid migration dependencies
+- Test SQL migrations manually before committing to ensure they work in all environments
 
 ## React Native Best Practices
 
@@ -156,3 +159,24 @@ applyTo: "**"
 ## Testing Best Practices
 
 Usar o banco de dados real mesmo para teste com diferença de usar transacoes no banco dados para modificar os dados e depois roolback em caso de testes dos endpoints e usar o banco de dados real (e nao de dteste ou algo do tipo) para criar as estruturas das tabelas
+
+## Database Information
+
+**PostgreSQL Version:**
+```
+PostgreSQL 14.19 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+```
+
+**Database Name:**
+```
+gestaonotas
+```
+
+**Commands to check database info:**
+```bash
+# Check PostgreSQL version
+docker-compose -f infra/docker-compose.yml exec web python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute('SELECT version()'); print(cursor.fetchone())"
+
+# Check database name
+docker-compose -f infra/docker-compose.yml exec web python manage.py shell -c "from django.db import connection; print('Database:', connection.settings_dict['NAME'])"
+```

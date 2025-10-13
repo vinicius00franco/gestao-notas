@@ -31,3 +31,4 @@ class JobStatusView(generics.RetrieveAPIView):
     queryset = JobProcessamento.objects.all()
     serializer_class = JobProcessamentoSerializer
     lookup_field = 'uuid'
+    permission_classes = []  # Temporário para teste

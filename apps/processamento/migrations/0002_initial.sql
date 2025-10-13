@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS movimento_jobs_processamento (
     jbp_usr_alteracao INTEGER,
     jbp_dt_conclusao TIMESTAMPTZ,
     jbp_mensagem_erro TEXT,
-    emp_id BIGINT NOT NULL,
+    emp_id BIGINT,
     clf_id_status BIGINT NOT NULL
 );
 
