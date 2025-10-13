@@ -11,9 +11,7 @@ export const uploadNota = async (
   if (vars.meu_cnpj) {
     form.append('meu_cnpj', vars.meu_cnpj);
   }
-  const res = await api.post(endpoints.processarNota, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await api.post(endpoints.processarNota, form);
   return res.data as { message: string; job_uuid: string };
 };
 
