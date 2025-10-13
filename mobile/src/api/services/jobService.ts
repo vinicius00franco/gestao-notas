@@ -71,3 +71,18 @@ export const listJobs = async () => {
   const res = await api.get(endpoints.listJobs);
   return res.data as JobStatus[];
 };
+
+export const listJobsPendentes = async () => {
+  const res = await api.get(endpoints.listJobsPendentes);
+  return res.data as JobStatus[];
+};
+
+export const listJobsConcluidos = async () => {
+  const res = await api.get(endpoints.listJobsConcluidos);
+  return res.data as JobStatus[];
+};
+
+export const listJobsErros = async () => {
+  const res = await api.get(endpoints.listJobsErros);
+  return res.data as JobStatus[];
+};

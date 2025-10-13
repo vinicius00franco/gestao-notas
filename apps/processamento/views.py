@@ -117,6 +117,33 @@ class JobStatusView(generics.RetrieveDestroyAPIView):
         return Response({'uuid': str(instance.uuid), 'status': {'codigo': instance.status.codigo, 'descricao': instance.status.descricao}}, status=status.HTTP_202_ACCEPTED)
 
 
+class JobPendentesView(generics.ListAPIView):
+    """Lista jobs pendentes (GET /api/jobs/pendentes/)."""
+    serializer_class = JobProcessamentoSerializer
+    permission_classes = []  # Temporário para teste
+
+    def get_queryset(self):
+        return JobProcessamento.objects.filter(status__codigo='PENDENTE').order_by('-dt_criacao')
+
+
+class JobConcluidosView(generics.ListAPIView):
+    """Lista jobs concluídos (GET /api/jobs/concluidos/)."""
+    serializer_class = JobProcessamentoSerializer
+    permission_classes = []  # Temporário para teste
+
+    def get_queryset(self):
+        return JobProcessamento.objects.filter(status__codigo='CONCLUIDO').order_by('-dt_criacao')
+
+
+class JobErrosView(generics.ListAPIView):
+    """Lista jobs com erro (GET /api/jobs/erros/)."""
+    serializer_class = JobProcessamentoSerializer
+    permission_classes = []  # Temporário para teste
+
+    def get_queryset(self):
+        return JobProcessamento.objects.filter(status__codigo='ERRO').order_by('-dt_criacao')
+
+
 class JobListView(generics.ListAPIView):
     """Lista jobs para exibição em filas (GET /api/jobs/)."""
     queryset = JobProcessamento.objects.all().order_by('-dt_criacao')

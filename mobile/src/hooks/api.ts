@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getContasAPagar, getContasAReceber } from '../api/services/contasService';
 import { getDashboard } from '../api/services/dashboardService';
-import { deleteJob, getJobStatus, listJobs, reprocessJob, uploadNota } from '../api/services/jobService';
+import { listJobs, listJobsPendentes, listJobsConcluidos, listJobsErros, deleteJob, getJobStatus, reprocessJob, uploadNota } from '../api/services/jobService';
 import { getUnclassifiedCompanies, updateUnclassifiedCompany } from '../services/unclassifiedCompaniesService';
 import { getNotasFiscais, getClassificacoes, updateNotaFiscalClassificacao } from '../services/notaFiscalService';
 import { JobStatus, UnclassifiedCompany, NotaFiscal, Classificacao } from '../types';
@@ -15,6 +15,9 @@ export const queryKeys = {
   notasFiscais: ['notasFiscais'] as const,
   classificacoes: ['classificacoes'] as const,
   jobs: ['jobs'] as const,
+  jobsPendentes: ['jobsPendentes'] as const,
+  jobsConcluidos: ['jobsConcluidos'] as const,
+  jobsErros: ['jobsErros'] as const,
 };
 
 export function useContasAPagar() {
@@ -74,6 +77,27 @@ export function useListJobs() {
   return useQuery({
     queryKey: queryKeys.jobs,
     queryFn: listJobs,
+  });
+}
+
+export function useListJobsPendentes() {
+  return useQuery({
+    queryKey: queryKeys.jobsPendentes,
+    queryFn: listJobsPendentes,
+  });
+}
+
+export function useListJobsConcluidos() {
+  return useQuery({
+    queryKey: queryKeys.jobsConcluidos,
+    queryFn: listJobsConcluidos,
+  });
+}
+
+export function useListJobsErros() {
+  return useQuery({
+    queryKey: queryKeys.jobsErros,
+    queryFn: listJobsErros,
   });
 }
 
