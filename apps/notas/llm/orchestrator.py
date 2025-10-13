@@ -119,6 +119,24 @@ class DocumentProcessor:
                 f"(confiança: {classificacao.confianca:.2f})"
             )
             
+            # Validação: Verificar se é um tipo suportado
+            tipos_suportados = [TipoDocumento.NF_PRODUTO, TipoDocumento.NF_SERVICO, TipoDocumento.EXTRATO_FINANCEIRO]
+            if classificacao.tipo not in tipos_suportados:
+                logger.warning(
+                    f"LLM: Documento {filename} classificado como '{classificacao.tipo}' não é suportado. "
+                    f"Tipos suportados: {[t.value for t in tipos_suportados]}. "
+                    f"Interrompendo processamento da cadeia LLM."
+                )
+                return ProcessingResult(
+                    success=False,
+                    tipo_documento=None,
+                    classificacao=classificacao,
+                    dados_extraidos=None,
+                    validacao=None,
+                    error=f"Tipo de documento '{classificacao.tipo}' não suportado pela cadeia LLM",
+                    filename=filename
+                )
+            
             if classificacao.confianca < MIN_CONFIDENCE_SCORE:
                 logger.warning(
                     f"LLM: Confiança da classificação baixa para {filename}: {classificacao.confianca:.2f} "
@@ -132,6 +150,23 @@ class DocumentProcessor:
                 text=text,
                 images=images
             )
+            
+            # Validação: Verificar se dados foram extraídos
+            if not dados_extraidos:
+                logger.warning(
+                    f"LLM: Nenhum dado extraído para {filename} do tipo {classificacao.tipo}. "
+                    f"Interrompendo processamento da cadeia LLM."
+                )
+                return ProcessingResult(
+                    success=False,
+                    tipo_documento=classificacao.tipo,
+                    classificacao=classificacao,
+                    dados_extraidos=None,
+                    validacao=None,
+                    error="Nenhum dado válido extraído do documento",
+                    filename=filename
+                )
+            
             logger.info(f"LLM: Dados extraídos com sucesso para {filename}")
             
             # Etapa 4: Validação (opcional)
@@ -141,7 +176,7 @@ class DocumentProcessor:
                 validacao = self.validator.validate(dados_extraidos)
                 logger.info(
                     f"LLM: Validação para {filename}: {'OK' if validacao.valido else 'FALHOU'} "
-                    f"(score: {validacao.score_confianca:.2f})"
+                    f"(score: {validacao.score_qualidade:.2f})"
                 )
                 
                 if not validacao.valido:
@@ -302,11 +337,44 @@ class DocumentProcessor:
                 tipo_documento = tipo_conhecido
                 classificacao = None  # Não reclassifica
             
+            # Validação: Verificar se é um tipo suportado
+            tipos_suportados = [TipoDocumento.NF_PRODUTO, TipoDocumento.NF_SERVICO, TipoDocumento.EXTRATO_FINANCEIRO]
+            if tipo_documento not in tipos_suportados:
+                logger.warning(
+                    f"LLM: Documento {batch_name} classificado como '{tipo_documento}' não é suportado. "
+                    f"Interrompendo processamento da cadeia LLM."
+                )
+                return ProcessingResult(
+                    success=False,
+                    tipo_documento=None,
+                    classificacao=classificacao,
+                    dados_extraidos=None,
+                    validacao=None,
+                    error=f"Tipo de documento '{tipo_documento}' não suportado pela cadeia LLM",
+                    filename=batch_name
+                )
+            
             # Extrai
             dados = self.extractor_factory.extract(
                 tipo=tipo_documento,
                 images=images
             )
+            
+            # Validação: Verificar se dados foram extraídos
+            if not dados:
+                logger.warning(
+                    f"LLM: Nenhum dado extraído para {batch_name} do tipo {tipo_documento}. "
+                    f"Interrompendo processamento da cadeia LLM."
+                )
+                return ProcessingResult(
+                    success=False,
+                    tipo_documento=tipo_documento,
+                    classificacao=classificacao,
+                    dados_extraidos=None,
+                    validacao=None,
+                    error="Nenhum dado válido extraído do documento",
+                    filename=batch_name
+                )
             
             # Valida
             validacao = None

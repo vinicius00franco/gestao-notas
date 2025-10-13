@@ -1,40 +1,50 @@
-import abc
-import xml.etree.ElementTree as ET
+"""
+Estratégia de extração direta de PDFs usando regex e parsing de texto.
+"""
+
+import logging
 import re
 from decimal import Decimal
 from datetime import date, datetime
-from pydantic import BaseModel
 from pypdf import PdfReader
 import io
 
-class InvoiceData(BaseModel):
-    numero: str
-    remetente_cnpj: str
-    remetente_nome: str
-    destinatario_cnpj: str
-    destinatario_nome: str
-    valor_total: Decimal
-    data_emissao: date
-    data_vencimento: date
+from apps.notas.extractors import InvoiceData
+from apps.notas.extraction_service import ExtractionMethod
+from .base import ExtractionStrategy
 
-class ExtractorInterface(abc.ABC):
-    @abc.abstractmethod
-    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
-        raise NotImplementedError
+logger = logging.getLogger(__name__)
 
-class PDFExtractor(ExtractorInterface):
+
+class PDFExtractionStrategy(ExtractionStrategy):
+    """Estratégia de extração direta de PDFs."""
+
+    @property
+    def method(self) -> ExtractionMethod:
+        return ExtractionMethod.PDF
+
+    @property
+    def name(self) -> str:
+        return "PDF Direct"
+
+    @property
+    def description(self) -> str:
+        return "Extração direta de PDFs usando regex patterns para identificar dados fiscais"
+
     def extract(self, file_content: bytes, filename: str) -> InvoiceData:
-        print("--- USANDO EXTRATOR PDF (EXTRAÇÃO REAL) ---")
+        """Extrai dados diretamente do PDF."""
+        logger.info(f"PDF: Iniciando extração direta para {filename}")
 
         try:
             # Extrair texto do PDF
             text = self._extract_text_from_pdf(file_content)
-            print(f"Texto extraído do PDF ({len(text)} caracteres)")
+            logger.debug(f"PDF: Texto extraído ({len(text)} caracteres)")
 
             # Tentar extrair dados usando padrões de NFe
             dados = self._parse_nfe_data(text)
+            logger.debug(f"PDF: Dados extraídos: {dados}")
 
-            return InvoiceData(
+            invoice_data = InvoiceData(
                 numero=dados.get('numero', 'PDF-001'),
                 remetente_cnpj=dados.get('remetente_cnpj', ''),
                 remetente_nome=dados.get('remetente_nome', ''),
@@ -45,8 +55,11 @@ class PDFExtractor(ExtractorInterface):
                 data_vencimento=dados.get('data_vencimento', date.today())
             )
 
+            logger.info(f"PDF: Extração concluída - Número: {invoice_data.numero}, Valor: R$ {invoice_data.valor_total}")
+            return invoice_data
+
         except Exception as e:
-            print(f"Erro na extração PDF: {e}")
+            logger.error(f"PDF: Erro na extração para {filename}: {e}")
             # Fallback para dados básicos se a extração falhar
             return InvoiceData(
                 numero="PDF-ERRO",
@@ -68,7 +81,7 @@ class PDFExtractor(ExtractorInterface):
                 text += page.extract_text() + "\n"
             return text
         except Exception as e:
-            print(f"Erro ao extrair texto do PDF: {e}")
+            logger.error(f"Erro ao extrair texto do PDF: {e}")
             return ""
 
     def _parse_nfe_data(self, text: str) -> dict:
@@ -137,73 +150,4 @@ class PDFExtractor(ExtractorInterface):
         if destinatario_match:
             dados['destinatario_nome'] = destinatario_match.group(1).strip()
 
-        print(f"Dados extraídos do PDF: {dados}")
         return dados
-
-class XMLExtractor(ExtractorInterface):
-    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
-        print("--- USANDO EXTRATOR XML (NFe) ---")
-        try:
-            root = ET.fromstring(file_content.decode('utf-8'))
-            # Simulação de parsing XML NFe
-            return InvoiceData(
-                numero="XML-NFe-001",
-                remetente_cnpj="11.111.111/0001-11",
-                remetente_nome="Fornecedor XML SA",
-                destinatario_cnpj="99.999.999/0001-99",
-                destinatario_nome="Minha Empresa Inc",
-                valor_total=Decimal("2000.00"),
-                data_emissao=date.today(),
-                data_vencimento=date.today()
-            )
-        except ET.ParseError:
-            raise ValueError("Arquivo XML inválido")
-
-class ImageExtractor(ExtractorInterface):
-    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
-        print("--- USANDO EXTRATOR OCR (IMAGEM) ---")
-        # Simulação de OCR
-        return InvoiceData(
-            numero="OCR-001",
-            remetente_cnpj="22.222.222/0001-22",
-            remetente_nome="Empresa Imagem LTDA",
-            destinatario_cnpj="99.999.999/0001-99",
-            destinatario_nome="Minha Empresa Inc",
-            valor_total=Decimal("800.00"),
-            data_emissao=date.today(),
-            data_vencimento=date.today()
-        )
-
-class ExtractorFactory:
-    @staticmethod
-    def get_extractor(filename: str) -> ExtractorInterface:
-        extension = filename.lower().split('.')[-1]
-        
-        if extension == 'pdf':
-            return PDFExtractor()
-        elif extension == 'xml':
-            return XMLExtractor()
-        elif extension in ['jpg', 'jpeg', 'png', 'tiff']:
-            return ImageExtractor()
-        else:
-            return SimulatedExtractor()
-
-class SimulatedExtractor(ExtractorInterface):
-    def extract(self, file_content: bytes, filename: str) -> InvoiceData:
-        print("--- USANDO EXTRATOR SIMULADO ---")
-        is_compra = "compra" in filename.lower()
-        my_cnpj = "99.999.999/0001-99"
-        if is_compra:
-            return InvoiceData(
-                remetente_cnpj="11.222.333/0001-44", remetente_nome="Fornecedor Simulado LTDA",
-                destinatario_cnpj=my_cnpj, destinatario_nome="Minha Empresa Inc",
-                valor_total=Decimal("750.00"), data_emissao=date(2025, 9, 26),
-                data_vencimento=date(2025, 10, 26), numero="NF-COMPRA-123"
-            )
-        else:
-            return InvoiceData(
-                remetente_cnpj=my_cnpj, remetente_nome="Minha Empresa Inc",
-                destinatario_cnpj="55.666.777/0001-88", destinatario_nome="Cliente Simulado SA",
-                valor_total=Decimal("1200.50"), data_emissao=date(2025, 9, 27),
-                data_vencimento=date(2025, 10, 27), numero="NF-VENDA-456"
-            )

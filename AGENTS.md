@@ -154,6 +154,12 @@ applyTo: "**"
 
 Usar o banco de dados real mesmo para teste com diferença de usar transacoes no banco dados para modificar os dados e depois roolback em caso de testes dos endpoints e usar o banco de dados real (e nao de dteste ou algo do tipo) para criar as estruturas das tabelas
 
+### Exemplo de teste usando curl
+
+```bash
+cd /home/vinicius/Downloads/estudo/engenharia-software/gestao_notas && curl -X POST http://localhost:8000/api/processar-nota/ -F "arquivo=@media/notas_fiscais_uploads/nota-fiscal.jpeg" -H "Content-Type: multipart/form-data"
+```
+
 ## Database Information
 
 **PostgreSQL Version:**

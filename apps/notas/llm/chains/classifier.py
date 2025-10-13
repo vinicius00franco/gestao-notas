@@ -40,11 +40,17 @@ Analise o documento fornecido e classifique-o em uma das seguintes categorias:
 - Se tiver CFOP ou NCM → NF_PRODUTO
 - Se tiver ISS destacado → NF_SERVICO
 
+**VALIDAÇÃO IMPORTANTE:**
+- Se o documento NÃO for uma nota fiscal (NFe/NFSe) ou extrato financeiro, classifique como "DESCONHECIDO"
+- Documentos como contratos, recibos simples, comprovantes de pagamento, faturas, boletos, etc. devem ser classificados como "DESCONHECIDO"
+- Apenas classifique como NF_PRODUTO, NF_SERVICO ou EXTRATO_FINANCEIRO de compra ou venda se tiver CERTEZA de que é um documento fiscal brasileiro válido
+
 **INSTRUÇÕES:**
 1. Analise o documento cuidadosamente
 2. Identifique palavras-chave e estrutura
 3. Classifique com confiança (0.0 a 1.0)
-4. Explique as razões da classificação
+4. Se confiança < 0.5, classifique como "DESCONHECIDO"
+5. Explique as razões da classificação
 
 Retorne a classificação no formato JSON especificado.
 """

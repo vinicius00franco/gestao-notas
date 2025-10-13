@@ -1,6 +1,7 @@
 """
 Chains especializadas para extração de cada tipo de documento.
 """
+import logging
 from typing import List, Optional, Union
 
 from ..base import BaseLLMProvider, LLMMessage
@@ -10,6 +11,8 @@ from ..schemas import (
     ExtratoFinanceiro,
     TipoDocumento
 )
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -63,6 +66,8 @@ Para cada item:
 4. Datas no formato YYYY-MM-DD
 5. Valide: quantidade × valor_unitario = valor_total (por item)
 6. Valide: valor_total = produtos + frete + seguro - desconto
+7. Se o documento NÃO contiver dados de nota fiscal válida, retorne dados vazios/nulos
+8. Não invente dados - apenas extraia informações realmente presentes no documento
 
 Retorne JSON seguindo o schema especificado.
 """
@@ -107,6 +112,8 @@ Extraia as seguintes informações do documento:
 4. Datas no formato YYYY-MM-DD
 5. Discriminação completa (texto longo permitido)
 6. Todos os tributos detalhados
+7. Se o documento NÃO contiver dados de nota fiscal de serviço válida, retorne dados vazios/nulos
+8. Não invente dados - apenas extraia informações realmente presentes no documento
 
 Retorne JSON seguindo o schema especificado.
 """
@@ -145,6 +152,8 @@ Para cada lançamento:
 4. Valores sempre positivos (tipo indica direção)
 5. Ordem cronológica
 6. Valide: saldo_final = saldo_inicial + total_creditos - total_debitos
+7. Se o documento NÃO contiver dados de extrato financeiro válido, retorne dados vazios/nulos
+8. Não invente dados - apenas extraia informações realmente presentes no documento
 
 Retorne JSON seguindo o schema especificado.
 """
@@ -192,6 +201,11 @@ class NotaFiscalProdutoExtractor:
             schema=NotaFiscalProduto
         )
         
+        # Validação básica: verificar se dados essenciais estão presentes
+        if not result or not hasattr(result, 'numero') or not result.numero:
+            logger.warning("Nenhum dado válido de NF Produto extraído")
+            return None
+        
         return result
 
 
@@ -233,6 +247,11 @@ class NotaFiscalServicoExtractor:
             schema=NotaFiscalServico
         )
         
+        # Validação básica: verificar se dados essenciais estão presentes
+        if not result or not hasattr(result, 'numero') or not result.numero:
+            logger.warning("Nenhum dado válido de NF Serviço extraído")
+            return None
+        
         return result
 
 
@@ -273,6 +292,11 @@ class ExtratoFinanceiroExtractor:
             messages=messages,
             schema=ExtratoFinanceiro
         )
+        
+        # Validação básica: verificar se dados essenciais estão presentes
+        if not result or not hasattr(result, 'lancamentos') or not result.lancamentos:
+            logger.warning("Nenhum dado válido de extrato financeiro extraído")
+            return None
         
         return result
 

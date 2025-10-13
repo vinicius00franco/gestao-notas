@@ -46,7 +46,7 @@ def exemplo_basico():
         
         if result.validacao:
             print(f"Validação: {'OK' if result.validacao.valido else 'FALHOU'}")
-            print(f"Score: {result.validacao.score_confianca:.2f}")
+            print(f"Score: {result.validacao.score_qualidade:.2f}")
             
             if result.validacao.erros_criticos:
                 print(f"Erros: {result.validacao.erros_criticos}")

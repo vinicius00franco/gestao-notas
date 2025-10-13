@@ -77,8 +77,7 @@ class DataValidator:
             campos_faltantes.append("data_emissao")
         if not nf.numero:
             campos_faltantes.append("numero")
-        if nf.valor_icms is None:
-            campos_faltantes.append("valor_icms")
+        # Removido: nf.valor_icms não existe no schema
         
         # Sugestões
         if nf.emissor and not nf.emissor.inscricao_estadual:
@@ -94,11 +93,11 @@ class DataValidator:
         
         return ResultadoValidacao(
             valido=len(erros_criticos) == 0,
-            score_confianca=score,
+            score_qualidade=score,
             erros_criticos=erros_criticos,
             avisos=avisos,
             campos_faltantes=campos_faltantes,
-            sugestoes=sugestoes
+            sugestoes_correcao=sugestoes
         )
     
     def validate_nf_servico(self, nf: NotaFiscalServico) -> ResultadoValidacao:
@@ -163,11 +162,11 @@ class DataValidator:
         
         return ResultadoValidacao(
             valido=len(erros_criticos) == 0,
-            score_confianca=score,
+            score_qualidade=score,
             erros_criticos=erros_criticos,
             avisos=avisos,
             campos_faltantes=campos_faltantes,
-            sugestoes=sugestoes
+            sugestoes_correcao=sugestoes
         )
     
     def validate_extrato(self, extrato: ExtratoFinanceiro) -> ResultadoValidacao:
@@ -229,11 +228,11 @@ class DataValidator:
         
         return ResultadoValidacao(
             valido=len(erros_criticos) == 0,
-            score_confianca=score,
+            score_qualidade=score,
             erros_criticos=erros_criticos,
             avisos=avisos,
             campos_faltantes=campos_faltantes,
-            sugestoes=sugestoes
+            sugestoes_correcao=sugestoes
         )
     
     def validate(
@@ -322,7 +321,7 @@ class DataValidator:
         if nf.itens: count += len(nf.itens)
         if nf.valor_produtos is not None: count += 1
         if nf.valor_total is not None: count += 1
-        if nf.valor_icms is not None: count += 1
+        # Removido: nf.valor_icms não existe no schema
         
         return count
     
