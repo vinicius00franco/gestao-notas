@@ -3,9 +3,14 @@ import Constants from 'expo-constants';
 
 // Resolve API base URL with priority:
 // 1. API_BASE_URL from Expo config (via .env)
-// 2. Fallback to a sensible default for local dev
-const apiBaseUrl =
-  (Constants.expoConfig?.extra?.apiBaseUrl as string) || 'http://localhost:8080';
+// 2. Throw error if not defined
+const apiBaseUrl = (Constants.expoConfig?.extra?.apiBaseUrl as string);
+
+if (!apiBaseUrl) {
+  throw new Error(
+    'API_BASE_URL is not defined. Please set the API_BASE_URL environment variable in your .env file or app.config.ts'
+  );
+}
 
 export const api = axios.create({
   baseURL: apiBaseUrl,

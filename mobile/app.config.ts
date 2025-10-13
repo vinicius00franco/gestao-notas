@@ -35,7 +35,7 @@ const defineConfig = () => ({
   },
   // web: { bundler: 'metro', output: 'static', favicon: './assets/favicon.png' },
   extra: {
-    apiBaseUrl: (process as any)?.env?.API_BASE_URL || 'http://localhost:8000'
+    apiBaseUrl: (process as any)?.env?.API_BASE_URL
     // Note: projectId will be added automatically by 'eas init' or you can add it manually
     // after creating an Expo account and project at https://expo.dev
   }
