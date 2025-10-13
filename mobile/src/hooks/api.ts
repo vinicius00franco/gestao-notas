@@ -3,7 +3,12 @@ import { getContasAPagar, getContasAReceber } from '../api/services/contasServic
 import { getDashboard } from '../api/services/dashboardService';
 import { deleteJob, getJobStatus, listJobs, reprocessJob, uploadNota } from '../api/services/jobService';
 import { getUnclassifiedCompanies, updateUnclassifiedCompany } from '../services/unclassifiedCompaniesService';
-import { getNotasFiscais, getClassificacoes, updateNotaFiscalClassificacao } from '../services/notaFiscalService';
+import {
+  getNotasFiscais,
+  getClassificacoes,
+  updateNotaFiscalClassificacao,
+  deleteNotaFiscal,
+} from '../services/notaFiscalService';
 import { JobStatus, UnclassifiedCompany, NotaFiscal, Classificacao } from '../types';
 
 export const queryKeys = {
@@ -70,6 +75,12 @@ export function useUploadNota() {
   });
 }
 
+export function useDeleteNotaFiscal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (notaId: string) => deleteNotaFiscal(notaId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.notasFiscais });
 export function useListJobs() {
   return useQuery({
     queryKey: queryKeys.jobs,

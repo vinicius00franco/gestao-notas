@@ -18,6 +18,8 @@ import CustomDrawerContent from '@/components/CustomDrawerContent';
 import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
 import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
 import ClassifyNotasKanbanScreen from '@/screens/ClassifyNotasKanbanScreen';
+import NotasFiscaisScreen from '@/screens/NotasFiscaisScreen';
+import NotaFiscalDetailScreen from '@/screens/NotaFiscalDetailScreen';
 import Splash from '@/screens/SplashScreen';
 import withErrorBoundary from '@/components/withErrorBoundary';
 
@@ -29,6 +31,8 @@ const JobStatusScreenWithErrorBoundary = withErrorBoundary(JobStatusScreen);
 const UnclassifiedCompaniesScreenWithErrorBoundary = withErrorBoundary(UnclassifiedCompaniesScreen);
 const ClassifyCompanyScreenWithErrorBoundary = withErrorBoundary(ClassifyCompanyScreen);
 const ClassifyNotasKanbanScreenWithErrorBoundary = withErrorBoundary(ClassifyNotasKanbanScreen);
+const NotasFiscaisScreenWithErrorBoundary = withErrorBoundary(NotasFiscaisScreen);
+const NotaFiscalDetailScreenWithErrorBoundary = withErrorBoundary(NotaFiscalDetailScreen);
 const HomeScreenWithErrorBoundary = withErrorBoundary(HomeScreen);
 
 const Tab = createBottomTabNavigator();
@@ -126,6 +130,14 @@ function AppDrawer() {
           drawerIcon: ({ color, size }) => <MaterialIcons name="class" size={size} color={color} />,
         }}
       />
+      <Drawer.Screen
+        name="NotasFiscais"
+        component={NotasFiscaisScreenWithErrorBoundary}
+        options={{
+          title: 'Notas Fiscais',
+          drawerIcon: ({ color, size }) => <MaterialIcons name="receipt" size={size} color={color} />,
+        }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -195,6 +207,11 @@ export default function RootNavigator() {
           name="ClassifyCompany"
           component={ClassifyCompanyScreenWithErrorBoundary}
           options={{ headerShown: true }}
+        />
+        <Stack.Screen
+          name="NotaFiscalDetail"
+          component={NotaFiscalDetailScreenWithErrorBoundary}
+          options={{ headerShown: true, title: 'Detalhes da Nota' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

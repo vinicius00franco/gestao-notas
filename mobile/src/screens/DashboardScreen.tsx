@@ -21,6 +21,10 @@ export default function DashboardScreen() {
         title="Unclassified Companies"
         onPress={() => navigation.navigate('UnclassifiedCompanies')}
       />
+      <Button
+        title="Ver/Excluir Notas Fiscais"
+        onPress={() => navigation.navigate('NotasFiscais')}
+      />
       <Text style={{ fontSize: 18, fontWeight: '700', padding: 16 }}>Top 5 Fornecedores (A Pagar)</Text>
       <FlatList
         data={fornecedores}

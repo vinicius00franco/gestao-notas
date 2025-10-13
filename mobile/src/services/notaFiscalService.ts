@@ -15,3 +15,7 @@ export async function updateNotaFiscalClassificacao(notaId: string, classificaca
     const response = await api.patch(`/notas-fiscais/${notaId}/`, { classificacao_id: classificacaoId });
     return response.data;
 }
+
+export async function deleteNotaFiscal(notaId: string): Promise<void> {
+    await api.delete(`/notas-fiscais/${notaId}/`);
+}
