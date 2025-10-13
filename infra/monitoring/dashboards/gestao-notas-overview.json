@@ -1,0 +1,90 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Gestão de Notas - Overview",
+    "tags": ["gestao-notas", "overview"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Notas Fiscais Processadas (24h)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(increase(notas_processadas_total[24h]))",
+            "legendFormat": "Total Processadas"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 50},
+                {"color": "red", "value": 100}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Taxa de Sucesso (%)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(notas_processadas_total{status=\"CONCLUIDO\"}[1h])) / sum(rate(notas_processadas_total[1h])) * 100",
+            "legendFormat": "Taxa Sucesso"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "green", "value": 95}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Jobs Ativos",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "jobs_processamento_ativos",
+            "legendFormat": "Jobs Ativos"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Valor Total Processado (R$)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(valor_total_notas_processadas)",
+            "legendFormat": "Valor Total"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyBRL"
+          }
+        }
+      }
+    ],
+    "time": {"from": "now-24h", "to": "now"},
+    "refresh": "30s"
+  }
+}

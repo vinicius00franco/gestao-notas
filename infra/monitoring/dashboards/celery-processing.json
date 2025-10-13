@@ -1,0 +1,55 @@
+{
+  "dashboard": {
+    "title": "Celery - Processamento de Notas",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Tasks Celery por Status",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (status) (rate(celery_task_total[5m]))",
+            "legendFormat": "{{status}}"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Tempo de Execução das Tasks",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(celery_task_duration_seconds_bucket{task_name=\"processar_nota_fiscal_task\"}[5m])) by (le))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(celery_task_duration_seconds_bucket{task_name=\"processar_nota_fiscal_task\"}[5m])) by (le))",
+            "legendFormat": "50th percentile"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Workers Ativos",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "celery_workers_active",
+            "legendFormat": "Workers"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Fila de Jobs",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "celery_queue_length{queue=\"default\"}",
+            "legendFormat": "Jobs na Fila"
+          }
+        ]
+      }
+    ]
+  }
+}

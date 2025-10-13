@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Mobile App - Analytics",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Telas Mais Acessadas",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "sum by (screen) (rate(mobile_screen_views_total[1h]))",
+            "legendFormat": "{{screen}}"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Ações do Usuário",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (action) (rate(mobile_user_actions_total[5m]))",
+            "legendFormat": "{{action}}"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Uploads de Notas (Mobile)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(mobile_user_actions_total{action=\"upload_nota\"}[1h])) * 3600",
+            "legendFormat": "Uploads/hora"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Tempo de Sessão Médio",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(mobile_session_duration_seconds)",
+            "legendFormat": "Tempo Médio"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        }
+      }
+    ]
+  }
+}
