@@ -3,6 +3,7 @@ import { View, Text, FlatList, Button } from 'react-native';
 import { useDashboard } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { ListItem } from '@/components/ListItem';
+import { formatCurrencyBRL } from '../utils/format';
 import { useNavigation } from '@react-navigation/native';
 
 export default function DashboardScreen() {
@@ -28,8 +29,8 @@ export default function DashboardScreen() {
       <FlatList
         data={fornecedores}
         keyExtractor={(item) => item.cnpj}
-        renderItem={({ item }: { item: { nome: string; cnpj: string; total_a_pagar: number } }) => (
-          <ListItem title={item.nome} subtitle={item.cnpj} right={<Text>R$ {item.total_a_pagar.toFixed(2)}</Text>} />
+        renderItem={({ item }: { item: { nome: string; cnpj: string; total_a_pagar: number | string | null } }) => (
+          <ListItem title={item.nome} subtitle={item.cnpj} right={<Text>{formatCurrencyBRL(item.total_a_pagar)}</Text>} />
         )}
         ListEmptyComponent={<Text style={{ padding: 16 }}>Sem dados.</Text>}
       />

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getContasAPagar, getContasAReceber } from '../api/services/contasService';
 import { getDashboard } from '../api/services/dashboardService';
-import { getJobStatus, uploadNota } from '../api/services/jobService';
+import { deleteJob, getJobStatus, listJobs, reprocessJob, uploadNota } from '../api/services/jobService';
 import { getUnclassifiedCompanies, updateUnclassifiedCompany } from '../services/unclassifiedCompaniesService';
 import {
   getNotasFiscais,
@@ -19,6 +19,7 @@ export const queryKeys = {
   unclassifiedCompanies: ['unclassifiedCompanies'] as const,
   notasFiscais: ['notasFiscais'] as const,
   classificacoes: ['classificacoes'] as const,
+  jobs: ['jobs'] as const,
 };
 
 export function useContasAPagar() {
@@ -80,6 +81,29 @@ export function useDeleteNotaFiscal() {
     mutationFn: (notaId: string) => deleteNotaFiscal(notaId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.notasFiscais });
+export function useListJobs() {
+  return useQuery({
+    queryKey: queryKeys.jobs,
+    queryFn: listJobs,
+  });
+}
+
+export function useReprocessJob() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: reprocessJob,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.jobs });
+    },
+  });
+}
+
+export function useDeleteJob() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteJob,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.jobs });
     },
   });
 }
