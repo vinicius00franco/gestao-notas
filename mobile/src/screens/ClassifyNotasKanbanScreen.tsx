@@ -29,7 +29,7 @@ const ClassifyNotasKanbanScreen = () => {
 
       const groupedData = allClassificacoes.map(c => ({
         ...c,
-        notas: notasFiscais.filter((n: NotaFiscal) => (n.classificacao_id || unclassifiedId) === c.id),
+        notas: notasFiscais.filter((n: NotaFiscal) => ((n as any).classificacao_id || unclassifiedId) === c.id),
       }));
       setData(groupedData);
     }
@@ -55,7 +55,8 @@ const ClassifyNotasKanbanScreen = () => {
     setData(newData);
 
     if (fromColumn.id !== toColumn.id) {
-      updateClassificacao({ notaId: item.id, classificacaoId: toColumn.id }, {
+      // Use uuid as the canonical identifier for notas when talking to the API
+      updateClassificacao({ notaId: (item as any).uuid, classificacaoId: toColumn.id }, {
         onSuccess: () => refetchNotasFiscais(),
       });
     }
@@ -89,7 +90,7 @@ const ClassifyNotasKanbanScreen = () => {
           <DraggableFlatList
             data={column.notas}
             renderItem={renderItem}
-            keyExtractor={(item) => `nota-${item.id}`}
+            keyExtractor={(item) => `nota-${(item as any).uuid}`}
             onDragBegin={(index: number) => {
               const item = column.notas[index];
               setDraggedItem({item, index, column: columnIndex});
