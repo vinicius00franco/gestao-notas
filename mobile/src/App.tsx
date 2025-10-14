@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import FlashMessage from 'react-native-flash-message';
+import { useInit } from './hooks/use-init';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +21,7 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  useInit();
   React.useEffect(() => {
     // initialize push notifications (will register token and set listeners)
     const initNotifications = async () => {
