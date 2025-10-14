@@ -161,6 +161,7 @@ export function useUploadNota() {
   return useMutation({
     mutationFn: uploadNota,
     onSuccess: (out) => {
+      console.log('[useUploadNota] Mutation sucesso, navegando para JobStatus', { job_uuid: out.job_uuid });
       showMessage({
         message: out.message,
         type: 'success',
@@ -168,12 +169,14 @@ export function useUploadNota() {
       nav.navigate('JobStatus', { uuid: out.job_uuid });
     },
     onError: (error: any) => {
+      console.error('[useUploadNota] Mutation erro', { error: error.message, responseData: error.response?.data });
       showMessage({
         message: error.response?.data?.detail || 'An error occurred',
         type: 'danger',
       });
     },
     onSettled: () => {
+      console.log('[useUploadNota] Mutation settled, invalidating queries');
       qc.invalidateQueries({ queryKey: queryKeys.contasAPagar });
       qc.invalidateQueries({ queryKey: queryKeys.contasAReceber });
       qc.invalidateQueries({ queryKey: queryKeys.dashboard });

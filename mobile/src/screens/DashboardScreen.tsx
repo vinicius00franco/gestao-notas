@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Button, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
+import { View, Button, ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import CalendarDashboard from '@/components/CalendarDashboard';
 import Card from '@/components/Card';
@@ -97,9 +98,6 @@ export default function DashboardScreen() {
           </Card>
         </View>
 
-        <Card title="Opportunity Created by Campaign">
-          <CalendarDashboard />
-        </Card>
       </ScrollView>
 
       <View style={styles.bottomBar}>

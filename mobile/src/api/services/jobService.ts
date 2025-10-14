@@ -6,33 +6,40 @@ import { Platform } from 'react-native';
 export const uploadNota = async (
   vars: { file: { uri: string; name: string; type: string }; meu_cnpj?: string }
 ) => {
+  console.log('[jobService.uploadNota] Iniciando upload', { fileName: vars.file.name, meu_cnpj: vars.meu_cnpj || 'não informado' });
   const form = new FormData();
   if (Platform.OS === 'web') {
     // In web, axios/XHR expects a Blob/File, not RN's { uri, name, type }
+    console.log('[jobService.uploadNota] Preparando arquivo para web');
     const res = await fetch(vars.file.uri);
     const blob = await res.blob();
     form.append('arquivo', blob, vars.file.name);
   } else {
     // Native (iOS/Android) accepts RN file descriptor
+    console.log('[jobService.uploadNota] Preparando arquivo para native');
     // @ts-ignore RN FormData compat
     form.append('arquivo', { uri: vars.file.uri, name: vars.file.name, type: vars.file.type } as any);
   }
   if (vars.meu_cnpj) {
     form.append('meu_cnpj', vars.meu_cnpj);
   }
+  console.log('[jobService.uploadNota] Enviando requisição para API');
   try {
     const res = await api.post(endpoints.processarNota, form);
     const data: any = res.data || {};
     const job_uuid: string = data.job_uuid || data.uuid;
     const message: string = data.message || 'Arquivo enviado. Processamento iniciado.';
+    console.log('[jobService.uploadNota] Upload bem-sucedido', { job_uuid, message });
     return { message, job_uuid } as { message: string; job_uuid: string };
   } catch (err: any) {
     // Detectar resposta estruturada de duplicidade retornada pela API
     const responseData = err?.response?.data;
     if (responseData && responseData.code === 'duplicate_invoice') {
+      console.warn('[jobService.uploadNota] Nota duplicada detectada', { detail: responseData.detail });
       // Jogar erro com mensagem amigavel para ser exibida na UI
       throw new Error(responseData.detail || 'Nota duplicada detectada.');
     }
+    console.error('[jobService.uploadNota] Erro no upload', { error: err.message, responseData });
     // Re-throw para a camada superior lidar com outras falhas
     throw err;
   }

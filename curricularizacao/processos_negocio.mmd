@@ -1,0 +1,19 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0066cc', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#004499', 'lineColor': '#000000', 'sectionBkgColor': '#f0f0f0', 'altSectionBkgColor': '#e0e0e0' }}}%%
+flowchart LR
+    A[Upload Nota Fiscal] --> B{Validacao Propriedade CNPJ}
+    B -->|Sim| C[Extracao Dados]
+    B -->|Nao| D[Rejeitar Nota - Erro CNPJ]
+    C --> E{Extracao Sucesso}
+    E -->|Sim| F[Classificacao Lancamento]
+    E -->|Nao| G[Falha Extracao - Erro Formato]
+    F --> H{Classificacao Sucesso}
+    H -->|Sim| I[Gestao Parceiros]
+    H -->|Nao| J[Falha Classificacao - Erro Dados]
+    I --> K{Gestao Sucesso}
+    K -->|Sim| L[Atualizacao Status]
+    K -->|Nao| M[Atualizar Parceiro - Erro Duplicacao]
+    M --> L
+    L --> N[Fim - Sucesso]
+    D --> O[Fim - Falha]
+    G --> O
+    J --> O

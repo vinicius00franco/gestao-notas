@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList, Text } from 'react-native';
+import { View, FlatList, Text, TouchableOpacity } from 'react-native';
 import { useContasAPagar } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { ListItem } from '@/components/ListItem';
@@ -8,7 +8,16 @@ import { formatCurrencyBRL } from '../utils/format';
 export default function ContasAPagarScreen() {
   const { data, isLoading, isError, refetch } = useContasAPagar();
   if (isLoading) return <Loading />;
-  if (isError) throw new Error('Erro ao buscar contas a pagar');
+  if (isError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+        <Text style={{ fontSize: 16, marginBottom: 16 }}>Erro ao buscar contas a pagar</Text>
+        <TouchableOpacity onPress={() => refetch()} style={{ padding: 12, backgroundColor: '#6200ee', borderRadius: 8 }}>
+          <Text style={{ color: 'white' }}>Tentar novamente</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>

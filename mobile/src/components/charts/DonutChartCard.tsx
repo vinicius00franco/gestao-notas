@@ -17,17 +17,21 @@ export default function DonutChartCard({ title = 'Metadata completeness', data, 
   return (
     <Card title={title}>
       <View accessible accessibilityLabel={title}>
-        <VictoryPie
-          height={height}
-          data={data}
-          colorScale={colors}
-          innerRadius={innerRadius}
-          labels={() => ''}
-          padAngle={2}
-          style={{
-            labels: { fill: theme.colors.text },
-          }}
-        />
+        {VictoryPie ? (
+          <VictoryPie
+            height={height}
+            data={data}
+            colorScale={colors}
+            innerRadius={innerRadius}
+            labels={() => ''}
+            padAngle={2}
+            style={{
+              labels: { fill: theme.colors.text },
+            }}
+          />
+        ) : (
+          <></>
+        )}
       </View>
     </Card>
   );
