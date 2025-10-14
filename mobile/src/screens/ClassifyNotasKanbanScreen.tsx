@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
 import NotaFiscalCard from '../components/NotaFiscalCard';
 import { NotaFiscal, Classificacao } from '../types';
 import { useNotasFiscais, useClassificacoes, useUpdateNotaFiscalClassificacao } from '../hooks/api';
@@ -58,15 +58,11 @@ const ClassifyNotasKanbanScreen = () => {
     }
   };
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<NotaFiscal>) => {
-    return (
-      <TouchableOpacity onLongPress={drag}>
-        <NotaFiscalCard item={item} isActive={isActive} />
-      </TouchableOpacity>
-    );
-  };
-
-  const [draggedItem, setDraggedItem] = useState<{item: NotaFiscal, index: number, column: number} | null>(null)
+  const renderItem = ({ item }: { item: NotaFiscal }) => (
+    <TouchableOpacity>
+      <NotaFiscalCard item={item} />
+    </TouchableOpacity>
+  );
 
   if (isLoadingNotas || isLoadingClassificacoes) {
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
@@ -81,18 +77,7 @@ const ClassifyNotasKanbanScreen = () => {
             data={column.notas}
             renderItem={renderItem}
             keyExtractor={(item) => `nota-${(item as any).uuid}`}
-            onDragBegin={(index: number) => {
-              const item = column.notas[index];
-              setDraggedItem({item, index, column: columnIndex});
-            }}
-            onDragEnd={({ to, from }) => {
-                const toColumnIndex = Math.floor((scrollOffset + (SCREEN_WIDTH / 2)) / COLUMN_WIDTH)
-                if (draggedItem) {
-                    onDragEnd(draggedItem.item, draggedItem.column, toColumnIndex, from, to)
-                }
-                setDraggedItem(null)
-            }}
-            containerStyle={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
           />
         </View>
       ))}

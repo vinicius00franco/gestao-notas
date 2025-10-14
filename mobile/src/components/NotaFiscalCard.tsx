@@ -32,6 +32,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     overflow: 'hidden',
   },
+  activeCard: {
+    transform: [{ scale: 0.98 }],
+    opacity: 0.9,
+  },
   cardHeader: {
     padding: 16,
   },
