@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -6,6 +6,7 @@ import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navig
 import { useColorScheme, TouchableOpacity } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useGlobalStore } from '../store/global';
 
 import DashboardScreen from '@/screens/DashboardScreen';
 import ContasAPagarScreen from '@/screens/ContasAPagarScreen';
@@ -147,21 +148,14 @@ function AppDrawer() {
 export default function RootNavigator() {
   const scheme = useColorScheme();
   const { colors } = useTheme();
-  const [appIsReady, setAppIsReady] = useState(false);
+  const { isDBReady } = useGlobalStore();
 
   useEffect(() => {
     async function prepare() {
       try {
-        // Keep the splash screen visible while we fetch resources
         await SplashScreen.preventAutoHideAsync();
-        // Artificially delay for two seconds to simulate a slow loading
-        // experience. Please remove this if you copy and paste the code!
-        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
-      } finally {
-        // Tell the application to render
-        setAppIsReady(true);
       }
     }
 
@@ -169,15 +163,10 @@ export default function RootNavigator() {
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
-    if (appIsReady) {
-      // This tells the splash screen to hide immediately! If we call this after
-      // `setAppIsReady`, then we may see a blank screen while the app is
-      // loading its initial state and rendering its first pixels. So instead,
-      // we hide the splash screen once we know the root view has already
-      // performed layout.
+    if (isDBReady) {
       await SplashScreen.hideAsync();
     }
-  }, [appIsReady]);
+  }, [isDBReady]);
 
   const navigationTheme = {
     ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
@@ -191,7 +180,7 @@ export default function RootNavigator() {
     },
   };
 
-  if (!appIsReady) {
+  if (!isDBReady) {
     return <Splash />;
   }
 
