@@ -14,4 +14,8 @@ export const colors = {
   text: '#333333',
   border: '#cccccc',
   placeholder: '#a9a9a9',
+  shadow: '#000',
+  primaryContainer: '#e0d6ff',
+  onSurfaceVariant: '#49454f',
+  outline: '#79747e',
 };

@@ -44,8 +44,13 @@ export type UnclassifiedCompany = {
 };
 
 export type NotaFiscal = {
+  id: string;
   uuid: string; // use uuid provided by backend
   numero: string;
+  valor: string | number;
+  cnpj_emitente: string;
+  nome_emitente: string;
+  classificacao_id: string;
   valor_total: string | number;
   parceiro: {
     uuid: string;

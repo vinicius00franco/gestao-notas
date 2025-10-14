@@ -118,14 +118,6 @@ function AppDrawer() {
       />
       <Drawer.Screen
         name="UnclassifiedCompanies"
-        component={UnclassifiedCompaniesScreenWithErrorBoundary}
-        options={{
-          title: 'Unclassified Companies',
-          drawerIcon: ({ color, size }) => <MaterialIcons name="business" size={size} color={color} />,
-        }}
-      />
-      <Drawer.Screen
-        name="ClassifyNotas"
         component={ClassifyNotasKanbanScreenWithErrorBoundary}
         options={{
           title: 'Classificar Notas',

@@ -1,31 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
-import DraggableFlatList, {
-  RenderItemParams,
-  DragEndParams,
-} from 'react-native-draggable-flatlist';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, FlatList } from 'react-native';
 import NotaFiscalCard from '../components/NotaFiscalCard';
 import { NotaFiscal, Classificacao } from '../types';
 import { useNotasFiscais, useClassificacoes, useUpdateNotaFiscalClassificacao } from '../hooks/api';
+import { useTheme } from '@/theme/ThemeProvider';
 
 type KanbanColumn = Classificacao & { notas: NotaFiscal[] };
-const COLUMN_WIDTH = 300;
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const ClassifyNotasKanbanScreen = () => {
+  const { colors } = useTheme();
   const { data: notasFiscais, isLoading: isLoadingNotas, refetch: refetchNotasFiscais } = useNotasFiscais();
   const { data: classificacoes, isLoading: isLoadingClassificacoes } = useClassificacoes();
   const { mutate: updateClassificacao } = useUpdateNotaFiscalClassificacao();
 
   const [data, setData] = useState<KanbanColumn[]>([]);
-  const [scrollOffset, setScrollOffset] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (notasFiscais && classificacoes) {
       const unclassifiedId = 'unclassified';
-      const allClassificacoes = [...classificacoes, { id: unclassifiedId, nome: 'Não Classificado' }];
+      const allClassificacoes = [
+        { id: unclassifiedId, nome: 'Não Classificado' },
+        ...classificacoes,
+      ];
 
       const groupedData = allClassificacoes.map(c => ({
         ...c,
@@ -77,17 +73,11 @@ const ClassifyNotasKanbanScreen = () => {
   }
 
   return (
-    <ScrollView
-      horizontal
-      ref={scrollViewRef}
-      onScroll={(e) => setScrollOffset(e.nativeEvent.contentOffset.x)}
-      scrollEventThrottle={16}
-      style={{ flex: 1, backgroundColor: '#f5f5f5' }}
-    >
-      {data.map((column, columnIndex) => (
+    <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
+      {data.map(column => (
         <View key={column.id} style={styles.column}>
-          <Text style={styles.columnHeader}>{column.nome}</Text>
-          <DraggableFlatList
+          <Text style={[styles.columnHeader, { color: colors.onBackground }]}>{column.nome}</Text>
+          <FlatList
             data={column.notas}
             renderItem={renderItem}
             keyExtractor={(item) => `nota-${(item as any).uuid}`}
@@ -112,18 +102,14 @@ const ClassifyNotasKanbanScreen = () => {
 
 const styles = StyleSheet.create({
   column: {
-    width: COLUMN_WIDTH,
-    margin: 10,
-    padding: 10,
-    backgroundColor: '#e3e3e3',
-    borderRadius: 8,
-    height: '95%',
+    marginVertical: 10,
+    paddingVertical: 10,
   },
   columnHeader: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 20,
   },
 });
 

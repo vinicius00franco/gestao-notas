@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NotaFiscal } from '../types';
+import { useTheme } from '@/theme/ThemeProvider';
 
 interface NotaFiscalCardProps {
   item: NotaFiscal;
@@ -8,6 +9,8 @@ interface NotaFiscalCardProps {
 }
 
 const NotaFiscalCard: React.FC<NotaFiscalCardProps> = ({ item, isActive }) => {
+  const { colors } = useTheme();
+
   return (
     <View style={[styles.card, isActive && styles.activeCard]}>
       <Text style={styles.title}>Nota Fiscal: {item.numero}</Text>
@@ -20,24 +23,46 @@ const NotaFiscalCard: React.FC<NotaFiscalCardProps> = ({ item, isActive }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
-    padding: 16,
+    borderRadius: 12,
     marginVertical: 8,
-    borderRadius: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
+    marginHorizontal: 4,
+    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    overflow: 'hidden',
   },
-  activeCard: {
-    transform: [{ scale: 1.05 }],
-    backgroundColor: '#f0f0f0',
+  cardHeader: {
+    padding: 16,
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
+  },
+  cardBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  value: {
+    fontWeight: '600',
+  },
+  valor: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  footer: {
+    borderTopWidth: 1,
+    padding: 12,
+    alignItems: 'flex-start',
+  },
+  statusIndicator: {
+    width: '40%',
+    height: 6,
+    borderRadius: 3,
   },
 });
 

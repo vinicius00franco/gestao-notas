@@ -1,0 +1,8 @@
+
+> gestao-notas-mobile@0.1.0 web:tunnel
+> expo start --web --tunnel
+
+Starting project at /app/mobile
+› Port 8081 is running this app in another window
+  /app/mobile (pid 3876)
+› Skipping dev server
