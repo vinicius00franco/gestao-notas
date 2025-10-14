@@ -8,6 +8,7 @@ export const getUnclassifiedCompanies = async () => {
 }
 
 export const updateUnclassifiedCompany = async (company: UnclassifiedCompany) => {
-  const res = await api.put(endpoints.updateUnclassifiedCompany(company.id), company);
+  const id = (company as any).uuid;
+  const res = await api.put(endpoints.updateUnclassifiedCompany(id), company);
   return res.data;
 };

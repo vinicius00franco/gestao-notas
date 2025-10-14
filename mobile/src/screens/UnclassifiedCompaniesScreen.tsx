@@ -20,7 +20,7 @@ export default function UnclassifiedCompaniesScreen() {
     <View style={{ flex: 1, padding: 16 }}>
       <FlatList
         data={data as UnclassifiedCompany[]}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => (item as any).uuid.toString()}
         renderItem={({ item }) => (
           <View style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#ccc' }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.nome_fantasia}</Text>
