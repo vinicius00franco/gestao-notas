@@ -1,46 +1,25 @@
-import React, { useMemo } from 'react';
-import { View, Button, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, Button, SafeAreaView, ScrollView, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import CalendarDashboard from '@/components/CalendarDashboard';
 import Card from '@/components/Card';
 import LineChartCard from '@/components/charts/LineChartCard';
-import StackedBarChartCard from '@/components/charts/StackedBarChartCard';
+import BarChartCard from '@/components/charts/BarChartCard';
 import DonutChartCard from '@/components/charts/DonutChartCard';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useDashboardData, Period } from '@/hooks/useDashboardData';
+
+const PERIODS: { label: string; value: Period }[] = [
+  { label: 'Últimos 7 dias', value: 'last_7_days' },
+  { label: 'Último mês', value: 'last_month' },
+  { label: 'Últimos 3 meses', value: 'last_3_months' },
+  { label: 'Último ano', value: 'last_year' },
+];
 
 export default function DashboardScreen() {
   const navigation = useNavigation<any>();
   const theme = useTheme();
-
-  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
-  const lineData = useMemo(
-    () => [
-      { x: 'Jan', y: 620 },
-      { x: 'Fev', y: 980 },
-      { x: 'Mar', y: 820 },
-      { x: 'Abr', y: 510 },
-      { x: 'Mai', y: 530 },
-      { x: 'Jun', y: 560 },
-    ],
-    [],
-  );
-
-  const stackedSeries = useMemo(
-    () => [
-      { color: '#4C6FFF', data: months.map((m, i) => ({ x: m, y: [30, 20, 15, 10, 25, 35][i] })) },
-      { color: '#FF5C8A', data: months.map((m, i) => ({ x: m, y: [20, 15, 10, 8, 12, 18][i] })) },
-      { color: '#22C55E', data: months.map((m, i) => ({ x: m, y: [10, 8, 6, 5, 7, 9][i] })) },
-    ],
-    [],
-  );
-
-  const donutData = useMemo(
-    () => [
-      { x: 'Com descrição', y: 18575, color: '#7C3AED' },
-      { x: 'Sem descrição', y: 13250, color: '#EDE9FE' },
-    ],
-    [],
-  );
+  const [period, setPeriod] = useState<Period>('last_month');
+  const { data, isLoading, isError } = useDashboardData(period);
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
@@ -48,63 +27,105 @@ export default function DashboardScreen() {
     title: { ...theme.typography.h2 },
     subtitle: { ...theme.typography.caption },
     actions: { flexDirection: 'row', gap: 8, paddingHorizontal: 8, paddingBottom: 8 },
-    grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-    half: { width: '49%' },
-    kpiRow: { flexDirection: 'row', justifyContent: 'space-between' },
-    kpi: { width: '49%' },
-    bottomBar: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
+    periodFilterContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      paddingVertical: 8,
       backgroundColor: theme.colors.surface,
-      padding: 12,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.border,
     },
-    bottomText: { textAlign: 'center', color: theme.colors.onSurfaceVariant },
+    periodButton: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 16,
+    },
+    periodButtonActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    periodButtonText: {
+      ...theme.typography.body2,
+      color: theme.colors.onSurface,
+    },
+    periodButtonTextActive: {
+      color: theme.colors.onPrimary,
+    },
+    kpiRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 12 },
+    kpi: { width: '48%' },
+    loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    errorText: { ...theme.typography.h3, color: theme.colors.error },
   });
+
+  if (isLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Erro ao carregar os dados.</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Sales Analysis</Text>
-        <Text style={styles.subtitle}>Overview summary (1 of 9)</Text>
+        <Text style={styles.title}>Dashboard de Análise</Text>
+        <Text style={styles.subtitle}>Visão geral do negócio</Text>
       </View>
-      <View style={styles.actions}>
-        <Button title="Classificar Notas" onPress={() => navigation.navigate('UnclassifiedCompanies')} />
-        <Button title="Notas Fiscais" onPress={() => navigation.navigate('NotasFiscais')} />
+
+      <View style={styles.periodFilterContainer}>
+        {PERIODS.map(p => (
+          <TouchableOpacity
+            key={p.value}
+            style={[styles.periodButton, period === p.value && styles.periodButtonActive]}
+            onPress={() => setPeriod(p.value)}
+          >
+            <Text style={[styles.periodButtonText, period === p.value && styles.periodButtonTextActive]}>{p.label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
-      <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 110 }}>
+
+      <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 24 }}>
         <View style={styles.kpiRow}>
-          <Card title="Sales" style={styles.kpi}>
-            <Text style={{ ...theme.typography.h1 }}>$12.6M</Text>
+          <Card title="Receita Total" style={styles.kpi}>
+            <Text style={{ ...theme.typography.h1 }}>R$ {data.kpis.total_revenue.toFixed(2)}</Text>
           </Card>
-          <Card title="Revenue" style={styles.kpi}>
-            <Text style={{ ...theme.typography.h1 }}>$12.6M</Text>
+          <Card title="Contas a Pagar" style={styles.kpi}>
+            <Text style={{ ...theme.typography.h1 }}>R$ {data.kpis.pending_payments.toFixed(2)}</Text>
           </Card>
-        </View>
-
-        <LineChartCard title="Average of Expenditures ($m) by Date" data={lineData} />
-
-        <StackedBarChartCard title="Sales by Month and Region" series={stackedSeries} categories={months} />
-
-        <View style={styles.grid}>
-          <DonutChartCard title="Metadata completeness" data={donutData} height={220} />
-          <Card style={styles.half} title="Usage and overage per capacity">
-            <Text style={styles.subtitle}>Contoso-Sales 99% / 100%</Text>
-            <Text style={styles.subtitle}>Contoso-Marketing 80% / 100%</Text>
+          <Card title="Notas Processadas" style={styles.kpi}>
+            <Text style={{ ...theme.typography.h1 }}>{data.kpis.processed_invoices}</Text>
+          </Card>
+          <Card title="Fornecedores Ativos" style={styles.kpi}>
+            <Text style={{ ...theme.typography.h1 }}>{data.kpis.active_suppliers}</Text>
           </Card>
         </View>
 
-        <Card title="Opportunity Created by Campaign">
-          <CalendarDashboard />
-        </Card>
+        <LineChartCard
+          title="Evolução da Receita (Últimos 6 Meses)"
+          data={data.charts.revenue_evolution.map(item => ({ x: item.month, y: item.total }))}
+        />
+
+        <BarChartCard
+          title="Top 5 Fornecedores"
+          data={data.charts.top_suppliers.map(item => ({ x: item.nome, y: item.total }))}
+        />
+
+        <DonutChartCard
+          title="Distribuição de Lançamentos"
+          data={data.charts.financial_entry_distribution.map(item => ({ x: item.tipo, y: item.total }))}
+        />
+
+        <BarChartCard
+          title="Status dos Lançamentos"
+          data={data.charts.financial_status_distribution.map(item => ({ x: item.status, y: item.count }))}
+        />
       </ScrollView>
-
-      <View style={styles.bottomBar}>
-        <Text style={styles.bottomText}>Comments   •   Reset   •   Filters   •   Pages   •   More</Text>
-      </View>
     </SafeAreaView>
   );
 }
