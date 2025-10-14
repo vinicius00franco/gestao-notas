@@ -12,26 +12,11 @@ const NotaFiscalCard: React.FC<NotaFiscalCardProps> = ({ item, isActive }) => {
   const { colors } = useTheme();
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.surface, shadowColor: colors.shadow },
-        isActive && { transform: [{ scale: 1.05 }], backgroundColor: colors.primaryContainer },
-      ]}>
-      <View style={styles.cardHeader}>
-        <Text style={[styles.title, { color: colors.onSurface }]}>{item.nome_emitente}</Text>
-      </View>
-      <View style={styles.cardBody}>
-        <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>
-          Nota Fiscal: <Text style={styles.value}>{item.numero}</Text>
-        </Text>
-        <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>
-          Valor: <Text style={[styles.value, styles.valor]}>R$ {item.valor}</Text>
-        </Text>
-      </View>
-      <View style={[styles.footer, { borderTopColor: colors.outline }]}>
-        <View style={[styles.statusIndicator, { backgroundColor: colors.primary }]} />
-      </View>
+    <View style={[styles.card, isActive && styles.activeCard]}>
+      <Text style={styles.title}>Nota Fiscal: {item.numero}</Text>
+      <Text>Valor: {String(item.valor_total)}</Text>
+      <Text>CNPJ: {item.parceiro?.cnpj}</Text>
+      <Text>Emitente: {item.parceiro?.nome}</Text>
     </View>
   );
 };

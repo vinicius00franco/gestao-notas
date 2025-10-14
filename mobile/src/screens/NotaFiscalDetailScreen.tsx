@@ -11,7 +11,7 @@ function NotaFiscalDetailScreen() {
   const { nota } = route.params as { nota: NotaFiscal };
   const deleteNotaMutation = useDeleteNotaFiscal();
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (uuid: string) => {
     Alert.alert(
       'Confirmar Exclusão',
       'Você tem certeza que deseja excluir esta nota fiscal?',
@@ -20,7 +20,7 @@ function NotaFiscalDetailScreen() {
         {
           text: 'Excluir',
           onPress: () => {
-            deleteNotaMutation.mutate(id, {
+            deleteNotaMutation.mutate(uuid, {
               onSuccess: () => {
                 navigation.goBack();
               },
@@ -35,15 +35,14 @@ function NotaFiscalDetailScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Detalhes da Nota Fiscal</Text>
-      <Text>ID: {nota.id}</Text>
+      <Text>UUID: {nota.uuid}</Text>
       <Text>Número: {nota.numero}</Text>
-      <Text>Valor: {nota.valor}</Text>
-      <Text>CNPJ Emitente: {nota.cnpj_emitente}</Text>
-      <Text>Nome Emitente: {nota.nome_emitente}</Text>
-      <Text>Classificação ID: {nota.classificacao_id}</Text>
+      <Text>Valor: {String(nota.valor_total)}</Text>
+      <Text>CNPJ Emitente: {nota.parceiro?.cnpj}</Text>
+      <Text>Nome Emitente: {nota.parceiro?.nome}</Text>
       <Button
         title="Excluir"
-        onPress={() => handleDelete(nota.id)}
+        onPress={() => handleDelete(nota.uuid)}
         color="red"
       />
     </View>

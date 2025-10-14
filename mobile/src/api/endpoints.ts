@@ -12,5 +12,5 @@ export const endpoints = {
   calendarDia: '/api/calendar-dia/',
   notasFiscais: '/api/notas-fiscais/',
   unclassifiedCompanies: '/api/unclassified-companies/',
-  updateUnclassifiedCompany: (id: number) => `/api/unclassified-companies/${id}/`,
+  updateUnclassifiedCompany: (id: string | number) => `/api/unclassified-companies/${id}/`,
 };
