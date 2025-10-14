@@ -1,6 +1,6 @@
 import { api } from '../client';
 import { endpoints } from '../endpoints';
-import { JobStatus } from '../../types';
+import { JobStatus, PaginatedResponse } from '../../types';
 import { Platform } from 'react-native';
 
 export const uploadNota = async (
@@ -72,17 +72,20 @@ export const listJobs = async () => {
   return res.data as JobStatus[];
 };
 
-export const listJobsPendentes = async () => {
-  const res = await api.get(endpoints.listJobsPendentes);
-  return res.data as JobStatus[];
+export const listJobsPendentes = async (params?: { page?: number }) => {
+  const url = params?.page ? `${endpoints.listJobsPendentes}?page=${params.page}` : endpoints.listJobsPendentes;
+  const res = await api.get(url);
+  return res.data as PaginatedResponse<JobStatus>;
 };
 
-export const listJobsConcluidos = async () => {
-  const res = await api.get(endpoints.listJobsConcluidos);
-  return res.data as JobStatus[];
+export const listJobsConcluidos = async (params?: { page?: number }) => {
+  const url = params?.page ? `${endpoints.listJobsConcluidos}?page=${params.page}` : endpoints.listJobsConcluidos;
+  const res = await api.get(url);
+  return res.data as PaginatedResponse<JobStatus>;
 };
 
-export const listJobsErros = async () => {
-  const res = await api.get(endpoints.listJobsErros);
-  return res.data as JobStatus[];
+export const listJobsErros = async (params?: { page?: number }) => {
+  const url = params?.page ? `${endpoints.listJobsErros}?page=${params.page}` : endpoints.listJobsErros;
+  const res = await api.get(url);
+  return res.data as PaginatedResponse<JobStatus>;
 };

@@ -1,8 +1,16 @@
+export type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
 export type JobStatus = {
   uuid: string;
   status: { codigo: string; descricao: string };
   dt_conclusao?: string | null;
   erro?: string | null;
+  numero_nota?: string | null;
 };
 
 export type Lancamento = {
@@ -36,12 +44,14 @@ export type UnclassifiedCompany = {
 };
 
 export type NotaFiscal = {
-  id: string;
+  uuid: string; // use uuid provided by backend
   numero: string;
-  valor: number;
-  cnpj_emitente: string;
-  nome_emitente: string;
-  classificacao_id: string;
+  valor_total: string | number;
+  parceiro: {
+    uuid: string;
+    nome: string;
+    cnpj: string;
+  };
 };
 
 export type Classificacao = {

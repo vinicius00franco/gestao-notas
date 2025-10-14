@@ -123,7 +123,7 @@ class JobPendentesView(generics.ListAPIView):
     permission_classes = []  # Temporário para teste
 
     def get_queryset(self):
-        return JobProcessamento.objects.filter(status__codigo='PENDENTE').order_by('-dt_criacao')
+        return JobProcessamento.objects.filter(status__codigo='PENDENTE').order_by('-id').select_related('status').prefetch_related('notafiscal_set')
 
 
 class JobConcluidosView(generics.ListAPIView):
@@ -132,7 +132,7 @@ class JobConcluidosView(generics.ListAPIView):
     permission_classes = []  # Temporário para teste
 
     def get_queryset(self):
-        return JobProcessamento.objects.filter(status__codigo='CONCLUIDO').order_by('-dt_criacao')
+        return JobProcessamento.objects.filter(status__codigo='CONCLUIDO').order_by('-id').select_related('status').prefetch_related('notafiscal_set')
 
 
 class JobErrosView(generics.ListAPIView):
@@ -141,11 +141,11 @@ class JobErrosView(generics.ListAPIView):
     permission_classes = []  # Temporário para teste
 
     def get_queryset(self):
-        return JobProcessamento.objects.filter(status__codigo='ERRO').order_by('-dt_criacao')
+        return JobProcessamento.objects.filter(status__codigo='ERRO').order_by('-id').select_related('status').prefetch_related('notafiscal_set')
 
 
 class JobListView(generics.ListAPIView):
     """Lista jobs para exibição em filas (GET /api/jobs/)."""
-    queryset = JobProcessamento.objects.all().order_by('-dt_criacao')
+    queryset = JobProcessamento.objects.all().order_by('-id').select_related('status').prefetch_related('notafiscal_set')
     serializer_class = JobProcessamentoSerializer
     permission_classes = []  # Temporário para teste

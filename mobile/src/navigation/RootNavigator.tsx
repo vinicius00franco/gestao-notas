@@ -22,6 +22,7 @@ import NotasFiscaisScreen from '@/screens/NotasFiscaisScreen';
 import NotaFiscalDetailScreen from '@/screens/NotaFiscalDetailScreen';
 import Splash from '@/screens/SplashScreen';
 import withErrorBoundary from '@/components/withErrorBoundary';
+import CalendarScreen from '@/screens/CalendarScreen';
 
 const DashboardScreenWithErrorBoundary = withErrorBoundary(DashboardScreen);
 const ContasAPagarScreenWithErrorBoundary = withErrorBoundary(ContasAPagarScreen);
@@ -34,6 +35,7 @@ const ClassifyNotasKanbanScreenWithErrorBoundary = withErrorBoundary(ClassifyNot
 const NotasFiscaisScreenWithErrorBoundary = withErrorBoundary(NotasFiscaisScreen);
 const NotaFiscalDetailScreenWithErrorBoundary = withErrorBoundary(NotaFiscalDetailScreen);
 const HomeScreenWithErrorBoundary = withErrorBoundary(HomeScreen);
+const CalendarScreenWithErrorBoundary = withErrorBoundary(CalendarScreen);
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -136,6 +138,14 @@ function AppDrawer() {
         options={{
           title: 'Notas Fiscais',
           drawerIcon: ({ color, size }) => <MaterialIcons name="receipt" size={size} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="Calendario"
+        component={CalendarScreenWithErrorBoundary}
+        options={{
+          title: 'Calendário',
+          drawerIcon: ({ color, size }) => <MaterialIcons name="event" size={size} color={color} />,
         }}
       />
     </Drawer.Navigator>

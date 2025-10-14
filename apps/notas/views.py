@@ -6,6 +6,7 @@ from .serializers import NotaFiscalSerializer
 class NotaFiscalViewSet(viewsets.ModelViewSet):
     queryset = NotaFiscal.objects.all()
     serializer_class = NotaFiscalSerializer
+    lookup_field = 'uuid'
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

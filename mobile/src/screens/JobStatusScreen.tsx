@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { View, Text, Button, Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Button, Alert, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useListJobsPendentes, useListJobsConcluidos, useListJobsErros, useReprocessJob, useDeleteJob } from '../hooks/api';
 import Loading from '@/components/Loading';
-import { JobStatus } from '@/types';
+import { JobStatus, PaginatedResponse } from '@/types';
 import { showMessage } from 'react-native-flash-message';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
 
@@ -34,7 +34,8 @@ const JobItem = ({ item }: { item: JobStatus }) => {
 
   return (
     <View style={styles.jobItem}>
-      <Text style={styles.jobUuid}>{item.uuid}</Text>
+      <Text style={styles.jobUuid}>UUID: {item.uuid}</Text>
+      {item.numero_nota && <Text style={styles.jobNumero}>Número: {item.numero_nota}</Text>}
       <Text>Status: {item.status.codigo}</Text>
       {item.erro && <Text style={{ color: 'red' }}>Erro: {item.erro}</Text>}
       <View style={styles.buttons}>
@@ -82,10 +83,26 @@ export default function JobStatusScreen() {
     { key: 'ERRO', label: 'Erros' },
   ];
 
-  const currentQuery = activeTab === 0 ? pendentes : activeTab === 1 ? concluidos : erros;
-  const currentList = currentQuery.data || [];
+  const pendentesTotal =
+    pendentes.data?.pages.reduce(
+      (acc: number, page: PaginatedResponse<JobStatus>) => acc + (page.results?.length ?? 0),
+      0,
+    ) ?? 0;
+  const concluidosTotal =
+    concluidos.data?.pages.reduce(
+      (acc: number, page: PaginatedResponse<JobStatus>) => acc + (page.results?.length ?? 0),
+      0,
+    ) ?? 0;
+  const errosTotal =
+    erros.data?.pages.reduce(
+      (acc: number, page: PaginatedResponse<JobStatus>) => acc + (page.results?.length ?? 0),
+      0,
+    ) ?? 0;
 
-  if (currentQuery.isLoading) return <Loading />;
+  const currentQuery = activeTab === 0 ? pendentes : activeTab === 1 ? concluidos : erros;
+  const currentList = currentQuery.data?.pages.flatMap((page: PaginatedResponse<JobStatus>) => page.results) || [];
+
+  if (currentQuery.isLoading && !currentQuery.isFetchingNextPage) return <Loading />;
   if (currentQuery.isError) return <Text style={{ padding: 16 }}>Erro ao buscar notas processadas.</Text>;
 
   return (
@@ -98,7 +115,7 @@ export default function JobStatusScreen() {
         {tabs.map((t, idx) => (
           <TouchableOpacity key={t.key} style={styles.tabButton} onPress={() => flipTo(idx)}>
             <Text style={[styles.tabLabel, activeTab === idx && styles.tabLabelActive]}>
-              {t.label} ({activeTab === idx ? currentList.length : (idx === 0 ? pendentes.data?.length || 0 : idx === 1 ? concluidos.data?.length || 0 : erros.data?.length || 0)})
+              {t.label} ({idx === 0 ? pendentesTotal : idx === 1 ? concluidosTotal : errosTotal})
             </Text>
           </TouchableOpacity>
         ))}
@@ -112,6 +129,22 @@ export default function JobStatusScreen() {
           contentContainerStyle={{ padding: 16, gap: 12 }}
           refreshing={currentQuery.isLoading}
           onRefresh={currentQuery.refetch}
+          onEndReached={() => {
+            if (currentQuery.hasNextPage && !currentQuery.isFetchingNextPage) {
+              currentQuery.fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => {
+            if (currentQuery.isFetchingNextPage) {
+              return (
+                <View style={{ padding: 20 }}>
+                  <ActivityIndicator size="small" />
+                </View>
+              );
+            }
+            return null;
+          }}
           ListEmptyComponent={() => (
             <View style={{ padding: 24 }}>
               <Text>Nenhuma nota nesta categoria.</Text>
@@ -139,6 +172,10 @@ const styles = StyleSheet.create({
   jobUuid: {
     fontSize: 16,
     fontWeight: '700',
+  },
+  jobNumero: {
+    fontSize: 14,
+    color: '#666',
   },
   buttons: {
     flexDirection: 'row',

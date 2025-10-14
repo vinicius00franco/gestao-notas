@@ -8,6 +8,9 @@ export const endpoints = {
   contasAPagar: '/api/contas-a-pagar/',
   contasAReceber: '/api/contas-a-receber/',
   dashboard: '/api/dashboard/',
+  calendarResumo: '/api/calendar-resumo/',
+  calendarDia: '/api/calendar-dia/',
+  notasFiscais: '/api/notas-fiscais/',
   unclassifiedCompanies: '/api/unclassified-companies/',
   updateUnclassifiedCompany: (id: number) => `/api/unclassified-companies/${id}/`,
 };
