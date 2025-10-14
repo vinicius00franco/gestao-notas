@@ -70,10 +70,10 @@ class CalendarResumoView(views.APIView):
 
         zero_dec = Value(0, output_field=DecimalField(max_digits=12, decimal_places=2))
         agg = qs_base.values('data_vencimento').annotate(
-            total_pagar=Coalesce(Sum('valor', filter=Q(clf_tipo=tipo_pagar), output_field=DecimalField(max_digits=12, decimal_places=2)), zero_dec),
-            total_receber=Coalesce(Sum('valor', filter=Q(clf_tipo=tipo_receber), output_field=DecimalField(max_digits=12, decimal_places=2)), zero_dec),
-            qtde_pagar=Coalesce(Count('id', filter=Q(clf_tipo=tipo_pagar), output_field=IntegerField()), Value(0, output_field=IntegerField())),
-            qtde_receber=Coalesce(Count('id', filter=Q(clf_tipo=tipo_receber), output_field=IntegerField()), Value(0, output_field=IntegerField())),
+            total_pagar=Coalesce(Sum('valor', filter=Q(clf_tipo=tipo_pagar)), zero_dec),
+            total_receber=Coalesce(Sum('valor', filter=Q(clf_tipo=tipo_receber)), zero_dec),
+            qtde_pagar=Coalesce(Count('id', filter=Q(clf_tipo=tipo_pagar)), Value(0, output_field=IntegerField())),
+            qtde_receber=Coalesce(Count('id', filter=Q(clf_tipo=tipo_receber)), Value(0, output_field=IntegerField())),
         ).order_by('data_vencimento')
 
         resultados = []
