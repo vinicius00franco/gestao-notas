@@ -17,6 +17,7 @@ export async function updateNotaFiscalClassificacao(notaId: string, classificaca
     return response.data;
 }
 
-export async function deleteNotaFiscal(notaId: string): Promise<void> {
-    await api.delete(`${endpoints.notasFiscais}${notaId}/`);
+export async function deleteNotaFiscal(notaId: string): Promise<{ message: string }> {
+    const response = await api.delete(`${endpoints.notasFiscais}${notaId}/`);
+    return response.data;
 }

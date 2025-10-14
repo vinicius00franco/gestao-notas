@@ -185,8 +185,18 @@ export function useDeleteNotaFiscal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (notaId: string) => deleteNotaFiscal(notaId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      showMessage({
+        message: data.message || 'Nota fiscal excluída com sucesso!',
+        type: 'success',
+      });
       qc.invalidateQueries({ queryKey: queryKeys.notasFiscais });
+    },
+    onError: (error: any) => {
+      showMessage({
+        message: error.response?.data?.error || 'Erro ao excluir nota fiscal',
+        type: 'danger',
+      });
     },
   });
 }
