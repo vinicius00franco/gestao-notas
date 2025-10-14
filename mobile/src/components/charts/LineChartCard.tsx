@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryGroup, VictoryArea } from 'victory-native';
+import { VictoryChart, VictoryLine, VictoryAxis, VictoryGroup, VictoryArea } from 'victory-native';
 import Card from '@/components/Card';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -20,24 +20,18 @@ export default function LineChartCard({ title = 'Average of Sales by month', dat
 
   return (
     <Card title={title}>
-      <VictoryChart
-        padding={{ top: 10, bottom: 40, left: 40, right: 16 }}
-        theme={VictoryTheme.material}
-        height={height}
-      >
-        <VictoryAxis style={{ tickLabels: { fontSize: 10, fill: theme.colors.onSurfaceVariant } }} />
-        <VictoryAxis
-          dependentAxis
-          style={{ tickLabels: { fontSize: 10, fill: theme.colors.onSurfaceVariant } }}
-        />
-        <VictoryGroup>
-          <VictoryArea
-            data={chartData}
-            style={{ data: { fill: theme.colors.primaryContainer, strokeWidth: 0 } }}
-          />
-          <VictoryLine data={chartData} style={{ data: { stroke, strokeWidth: 3 } }} interpolation="natural" />
-        </VictoryGroup>
-      </VictoryChart>
+      {VictoryChart && VictoryLine && VictoryAxis && VictoryGroup && VictoryArea ? (
+        <VictoryChart padding={{ top: 10, bottom: 40, left: 40, right: 16 }} height={height}>
+          <VictoryAxis style={{ tickLabels: { fontSize: 10, fill: theme.colors.onSurfaceVariant } }} />
+          <VictoryAxis dependentAxis style={{ tickLabels: { fontSize: 10, fill: theme.colors.onSurfaceVariant } }} />
+          <VictoryGroup>
+            <VictoryArea data={chartData} style={{ data: { fill: theme.colors.primaryContainer, strokeWidth: 0 } }} />
+            <VictoryLine data={chartData} style={{ data: { stroke, strokeWidth: 3 } }} interpolation="natural" />
+          </VictoryGroup>
+        </VictoryChart>
+      ) : (
+        <></>
+      )}
     </Card>
   );
 }

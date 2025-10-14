@@ -12,25 +12,32 @@ export default function UploadNotaScreen() {
   const { mutateAsync, isPending } = useUploadNota();
 
   async function pickFile() {
+    console.log('[UploadNotaScreen] Iniciando seleção de arquivo');
     const res = await DocumentPicker.getDocumentAsync({ multiple: false });
     if (res.assets && res.assets[0]) {
       const a = res.assets[0];
+      console.log('[UploadNotaScreen] Arquivo selecionado:', { name: a.name, size: a.size, mimeType: a.mimeType });
       setFile({ uri: a.uri, name: a.name || 'nota', type: a.mimeType || 'application/octet-stream' });
+    } else {
+      console.log('[UploadNotaScreen] Nenhum arquivo selecionado');
     }
   }
 
   async function onSubmit() {
     if (!file) return;
+    console.log('[UploadNotaScreen] Iniciando upload da nota fiscal', { fileName: file.name, cnpj: cnpj || 'não informado' });
     try {
       const data: any = { file };
       if (cnpj) data.meu_cnpj = cnpj;
       const out = await mutateAsync(data);
+      console.log('[UploadNotaScreen] Upload concluído com sucesso', { job_uuid: out.job_uuid, message: out.message });
       showMessage({
         message: out.message,
         type: 'success',
       });
       nav.navigate('JobStatus', { uuid: out.job_uuid });
     } catch (error: any) {
+      console.error('[UploadNotaScreen] Erro no upload da nota fiscal', { error: error.message, response: error.response?.data });
       showMessage({
         message: error.response?.data?.detail || 'An error occurred',
         type: 'danger',

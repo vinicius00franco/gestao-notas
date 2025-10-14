@@ -1,0 +1,51 @@
+@startuml "Caso de Uso Preliminar"
+
+' Force straight, non-curved lines
+skinparam linetype ortho
+
+left to right direction
+
+actor "Usuário (Genérico)" as Usuario
+actor "Proprietário da Empresa" as Proprietario
+actor "Funcionários" as Funcionarios
+
+rectangle "Sistema de Gestão de Notas Fiscais" {
+		usecase "Upload de Nota Fiscal" as UC1
+		usecase "Validar Propriedade da Nota (CNPJ)" as UCv
+		usecase "Extrair Dados da Nota" as UCe
+		usecase "Classificar Lançamento" as UCc
+		usecase "Gerenciar Parceiros" as UCp
+		usecase "Criar Job de Processamento (UUID)" as UCjob
+		usecase "Consultar Status de Processamento" as UC2
+		usecase "Listar Contas a Pagar" as UC3
+		usecase "Listar Contas a Receber" as UC4
+		usecase "Visualizar Dashboard" as UC5
+}
+
+' Associações principais
+Proprietario --> UC1
+Proprietario --> UC2
+Proprietario --> UC3
+Proprietario --> UC4
+Proprietario --> UC5
+Funcionarios --> UC2
+Usuario <|-- Proprietario
+Usuario <|-- Funcionarios
+
+' Relações de inclusão (fluxos obrigatórios)
+UC1 .> UCjob : <<include>>
+UC1 .> UCv : <<include>>
+UC1 .> UCe : <<include>>
+UCe .> UCc : <<include>>
+UCc .> UCp : <<include>>
+
+note right of UC1
+	Fluxo principal de upload:
+	- Cria job (UUID)
+	- Valida propriedade por CNPJ
+	- Extrai dados
+	- Classifica lançamento
+	- Atualiza/Cria parceiro
+end note
+
+@enduml

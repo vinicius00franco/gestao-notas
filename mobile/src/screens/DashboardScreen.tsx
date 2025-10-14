@@ -1,5 +1,10 @@
+
 import React, { useState } from 'react';
 import { View, Button, SafeAreaView, ScrollView, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+
+import React, { useMemo } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useNavigation } from '@react-navigation/native';
 import Card from '@/components/Card';
 import LineChartCard from '@/components/charts/LineChartCard';
