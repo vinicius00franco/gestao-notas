@@ -24,17 +24,22 @@ function resolveApiBaseUrl() {
     }
   }
 
-  // 3. Web fallback: use current origin host
+  // 3. Try to get local IP from environment or config
+  // You can set API_BASE_URL in .env file for your machine's IP
+  const envUrl = process.env.API_BASE_URL;
+  if (envUrl) return envUrl.replace(/\/$/, '');
+
+  // 4. Web fallback: use current origin host
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname) {
     return `${window.location.protocol}//${window.location.hostname}:8080`;
   }
 
-  // 4. Android emulator
+  // 5. Android emulator
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:8080';
   }
 
-  // 5. iOS simulator / generic fallback
+  // 6. iOS simulator / generic fallback
   return 'http://localhost:8080';
 }
 

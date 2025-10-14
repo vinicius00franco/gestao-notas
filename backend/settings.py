@@ -4,7 +4,7 @@ from decouple import config, Csv
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost,192.168.0.0/16,10.0.0.0/8', cast=Csv())
 
 INSTALLED_APPS = [
     'django.contrib.admin',
