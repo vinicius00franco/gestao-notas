@@ -1,0 +1,16 @@
+{
+  "id": 4,
+  "uuid": "d4e5f6a7-b8c9-0123-4567-890abcdef3",
+  "status": { "codigo": "PROCESSANDO", "descricao": "Em processamento." },
+  "data_criacao": "2023-10-26T13:00:00Z",
+  "data_atualizacao": "2023-10-26T13:01:00Z",
+  "arquivo_url": "https://example.com/nota4.pdf",
+  "resultado": null,
+  "historico_status": [
+    { "status": "PENDENTE", "data_ocorrencia": "2023-10-26T13:00:00Z" },
+    { "status": "PROCESSANDO", "data_ocorrencia": "2023-10-26T13:01:00Z" }
+  ],
+  "dt_conclusao": null,
+  "erro": null,
+  "numero_nota": null
+}

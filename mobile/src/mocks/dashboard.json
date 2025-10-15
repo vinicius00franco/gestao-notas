@@ -1,0 +1,9 @@
+{
+  "top_5_fornecedores_pendentes": [
+    { "nome": "Fornecedor A", "cnpj": "11.111.111/0001-11", "total_a_pagar": 1500.50 },
+    { "nome": "Fornecedor B", "cnpj": "22.222.222/0001-22", "total_a_pagar": 1200.00 },
+    { "nome": "Fornecedor C", "cnpj": "33.333.333/0001-33", "total_a_pagar": 950.75 },
+    { "nome": "Fornecedor D", "cnpj": "44.444.444/0001-44", "total_a_pagar": 800.25 },
+    { "nome": "Fornecedor E", "cnpj": "55.555.555/0001-55", "total_a_pagar": 500.00 }
+  ]
+}

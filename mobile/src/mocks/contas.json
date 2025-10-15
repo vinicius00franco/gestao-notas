@@ -1,0 +1,39 @@
+{
+  "aPagar": [
+    {
+      "uuid": "abc-123-def-456",
+      "descricao": "Aluguel Mock",
+      "valor": 1500.00,
+      "data_vencimento": "2023-11-05",
+      "data_pagamento": null,
+      "clf_tipo": { "id": 1, "nome": "Moradia" },
+      "clf_status": { "id": 1, "nome": "Pendente" },
+      "dt_criacao": "2023-10-27T10:00:00Z",
+      "dt_alteracao": "2023-10-27T10:00:00Z"
+    },
+    {
+      "uuid": "ghi-789-jkl-012",
+      "descricao": "Internet Mock",
+      "valor": 99.90,
+      "data_vencimento": "2023-11-10",
+      "data_pagamento": null,
+      "clf_tipo": { "id": 2, "nome": "Serviços" },
+      "clf_status": { "id": 1, "nome": "Pendente" },
+      "dt_criacao": "2023-10-27T10:00:00Z",
+      "dt_alteracao": "2023-10-27T10:00:00Z"
+    }
+  ],
+  "aReceber": [
+    {
+      "uuid": "mno-345-pqr-678",
+      "descricao": "Salário Mock",
+      "valor": 5000.00,
+      "data_vencimento": "2023-11-01",
+      "data_pagamento": "2023-11-01",
+      "clf_tipo": { "id": 3, "nome": "Salário" },
+      "clf_status": { "id": 2, "nome": "Recebido" },
+      "dt_criacao": "2023-10-27T10:00:00Z",
+      "dt_alteracao": "2023-10-27T10:00:00Z"
+    }
+  ]
+}

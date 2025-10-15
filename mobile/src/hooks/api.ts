@@ -1,30 +1,16 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { getContasAPagar, getContasAReceber } from '../api/services/contasService';
-import { getDashboard } from '../api/services/dashboardService';
-import { getCalendarResumo, getCalendarDia, CalendarResumoResponse, CalendarDiaResponse } from '../api/services/calendarService';
 import {
-  listJobs,
-  listJobsPendentes,
-  listJobsConcluidos,
-  listJobsErros,
-  deleteJob,
-  getJobStatus,
-  reprocessJob,
-  uploadNota,
-} from '../api/services/jobService';
-import {
-  getUnclassifiedCompanies,
-  updateUnclassifiedCompany,
-} from '../services/unclassifiedCompaniesService';
-import {
-  getNotasFiscais,
-  getClassificacoes,
-  updateNotaFiscalClassificacao,
-  deleteNotaFiscal,
-} from '../services/notaFiscalService';
+  JobService,
+  DashboardService,
+  ContasService,
+  UnclassifiedCompaniesService,
+  NotaFiscalService,
+  CalendarService,
+} from '../providers/DataProvider';
 import { JobStatus, PaginatedResponse, UnclassifiedCompany, NotaFiscal, Classificacao } from '../types';
 import { showMessage } from 'react-native-flash-message';
 import { useNavigation } from '@react-navigation/native';
+import { CalendarResumoResponse, CalendarDiaResponse } from '../api/services/calendarService';
 
 export const queryKeys = {
   contasAPagar: ['contasAPagar'] as const,
@@ -49,7 +35,7 @@ export const queryKeys = {
 export function useContasAPagar() {
   return useQuery({
     queryKey: queryKeys.contasAPagar,
-    queryFn: getContasAPagar,
+    queryFn: ContasService.getContasAPagar,
     staleTime: 30_000,
   });
 }
@@ -57,7 +43,7 @@ export function useContasAPagar() {
 export function useContasAReceber() {
   return useQuery({
     queryKey: queryKeys.contasAReceber,
-    queryFn: getContasAReceber,
+    queryFn: ContasService.getContasAReceber,
     staleTime: 30_000,
   });
 }
@@ -65,7 +51,7 @@ export function useContasAReceber() {
 export function useDashboard() {
   return useQuery({
     queryKey: queryKeys.dashboard,
-    queryFn: getDashboard,
+    queryFn: DashboardService.getDashboard,
     staleTime: 60_000,
   });
 }
@@ -73,35 +59,35 @@ export function useDashboard() {
 export function useListJobs() {
   return useQuery({
     queryKey: queryKeys.jobs,
-    queryFn: listJobs,
+    queryFn: JobService.listJobs,
   });
 }
 
 export function useNotasFiscais() {
   return useQuery({
     queryKey: queryKeys.notasFiscais,
-    queryFn: getNotasFiscais,
+    queryFn: NotaFiscalService.getNotasFiscais,
   });
 }
 
 export function useClassificacoes() {
   return useQuery({
     queryKey: queryKeys.classificacoes,
-    queryFn: getClassificacoes,
+    queryFn: NotaFiscalService.getClassificacoes,
   });
 }
 
 export function useUnclassifiedCompanies() {
   return useQuery({
     queryKey: queryKeys.unclassifiedCompanies,
-    queryFn: getUnclassifiedCompanies,
+    queryFn: UnclassifiedCompaniesService.getUnclassifiedCompanies,
   });
 }
 
 export function useJobStatus(uuid?: string) {
   return useQuery({
     queryKey: queryKeys.jobStatus(uuid || ''),
-    queryFn: () => getJobStatus(uuid!),
+    queryFn: () => JobService.getJobStatus(uuid!),
     enabled: !!uuid,
     refetchInterval: (query) => {
       const status = query.state.data?.status?.codigo;
@@ -127,7 +113,7 @@ const getNextPageParam = (lastPage: PaginatedResponse<JobStatus>) => {
 export function useListJobsPendentes() {
   return useInfiniteQuery({
     queryKey: queryKeys.jobsPendentes,
-    queryFn: ({ pageParam = 1 }) => listJobsPendentes({ page: pageParam }),
+    queryFn: ({ pageParam = 1 }) => JobService.listJobsPendentes({ page: pageParam }),
     initialPageParam: 1,
     getNextPageParam,
   });
@@ -136,7 +122,7 @@ export function useListJobsPendentes() {
 export function useListJobsConcluidos() {
   return useInfiniteQuery({
     queryKey: queryKeys.jobsConcluidos,
-    queryFn: ({ pageParam = 1 }) => listJobsConcluidos({ page: pageParam }),
+    queryFn: ({ pageParam = 1 }) => JobService.listJobsConcluidos({ page: pageParam }),
     initialPageParam: 1,
     getNextPageParam,
   });
@@ -145,7 +131,7 @@ export function useListJobsConcluidos() {
 export function useListJobsErros() {
   return useInfiniteQuery({
     queryKey: queryKeys.jobsErros,
-    queryFn: ({ pageParam = 1 }) => listJobsErros({ page: pageParam }),
+    queryFn: ({ pageParam = 1 }) => JobService.listJobsErros({ page: pageParam }),
     initialPageParam: 1,
     getNextPageParam,
   });
@@ -159,7 +145,7 @@ export function useUploadNota() {
   const qc = useQueryClient();
   const nav = useNavigation<any>();
   return useMutation({
-    mutationFn: uploadNota,
+    mutationFn: JobService.uploadNota,
     onSuccess: (out) => {
       console.log('[useUploadNota] Mutation sucesso, navegando para JobStatus', { job_uuid: out.job_uuid });
       showMessage({
@@ -187,7 +173,7 @@ export function useUploadNota() {
 export function useDeleteNotaFiscal() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (notaId: string) => deleteNotaFiscal(notaId),
+    mutationFn: (notaId: string) => NotaFiscalService.deleteNotaFiscal(notaId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.notasFiscais });
     },
@@ -198,7 +184,7 @@ export function useUpdateNotaFiscalClassificacao() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ notaId, classificacaoId }: { notaId: string; classificacaoId: string }) =>
-      updateNotaFiscalClassificacao(notaId, classificacaoId),
+      NotaFiscalService.updateNotaFiscalClassificacao(notaId, classificacaoId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.notasFiscais });
     },
@@ -208,7 +194,7 @@ export function useUpdateNotaFiscalClassificacao() {
 export function useReprocessJob() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: reprocessJob,
+    mutationFn: JobService.reprocessJob,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.jobs });
       qc.invalidateQueries({ queryKey: queryKeys.jobsPendentes });
@@ -220,7 +206,7 @@ export function useReprocessJob() {
 export function useDeleteJob() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: deleteJob,
+    mutationFn: JobService.deleteJob,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.jobs });
       qc.invalidateQueries({ queryKey: queryKeys.jobsPendentes });
@@ -233,7 +219,7 @@ export function useDeleteJob() {
 export function useClassifyCompany() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (company: UnclassifiedCompany) => updateUnclassifiedCompany(company),
+    mutationFn: (company: UnclassifiedCompany) => UnclassifiedCompaniesService.updateUnclassifiedCompany(company),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.unclassifiedCompanies });
     },
@@ -247,14 +233,14 @@ export function useClassifyCompany() {
 export function useCalendarResumo(ano: number, mes: number) {
   return useQuery<CalendarResumoResponse>({
     queryKey: queryKeys.calendarResumo(ano, mes),
-    queryFn: () => getCalendarResumo({ ano, mes }),
+    queryFn: () => CalendarService.getCalendarResumo({ ano, mes }),
   });
 }
 
 export function useCalendarDia(data: string) {
   return useQuery<CalendarDiaResponse>({
     queryKey: queryKeys.calendarDia(data),
-    queryFn: () => getCalendarDia(data),
+    queryFn: () => CalendarService.getCalendarDia(data),
     enabled: !!data,
   });
 }
