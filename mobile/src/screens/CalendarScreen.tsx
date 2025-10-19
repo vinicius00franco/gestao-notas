@@ -107,7 +107,7 @@ const CalendarScreen = () => {
           <View style={styles.detailHeader}>
             <Text style={[typography.h2, { color: colors.text }]}>Detalhes de {selectedDate}</Text>
             <TouchableOpacity onPress={() => setSelectedDate(null)}>
-              <Text style={{ color: colors.primary }}>Visão do Mês</Text>
+              <Text style={{ color: colors.primary }}>Visão do Mê</Text>
             </TouchableOpacity>
           </View>
           {diaData?.detalhes?.map((item, index) => <LancamentoCalendarItem key={index} item={item} colors={colors} typography={typography} />)}
