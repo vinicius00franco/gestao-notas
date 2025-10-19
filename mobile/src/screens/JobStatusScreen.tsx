@@ -74,14 +74,27 @@ export default function JobStatusScreen() {
   const flipTo = (newIndex: number) => {
     if (newIndex === activeTab || animatingRef.current) return;
     animatingRef.current = true;
+
+    const resetAnimating = () => {
+      animatingRef.current = false;
+    };
+
+    const updateTab = () => {
+      setActiveTab(newIndex);
+    };
+
     // Primeiro meio-flip
-    anim.value = withTiming(90, { duration: 200 }, () => {
+    anim.value = withTiming(90, { duration: 200 }, (finished) => {
+      if (!finished) {
+        runOnJS(resetAnimating)();
+        return;
+      }
       // Trocar conteúdo na thread JS
-      runOnJS(setActiveTab)(newIndex);
+      runOnJS(updateTab)();
       // Continuar a animação do outro lado
       anim.value = -90;
-      anim.value = withTiming(0, { duration: 200 }, () => {
-        animatingRef.current = false;
+      anim.value = withTiming(0, { duration: 200 }, (finished) => {
+        runOnJS(resetAnimating)();
       });
     });
   };
