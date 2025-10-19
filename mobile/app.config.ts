@@ -23,16 +23,23 @@ const defineConfig = () => ({
       }
     ]
   ],
-  ios: { 
+  updates: {
+    url: "https://u.expo.dev/42afdd4a-ca0b-46f0-81f5-cb4826a2170f"
+  },
+  ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.gestaonotas.mobile'
+    bundleIdentifier: 'com.gestaonotas.mobile',
+    runtimeVersion: {
+      policy: 'appVersion'
+    }
   },
   android: {
     package: 'com.gestaonotas.mobile',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#FFFFFF'
-    }
+    },
+    runtimeVersion: '1.0.0'
   },
   // web: { bundler: 'metro', output: 'static' },
   extra: {
