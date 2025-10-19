@@ -1,29 +1,29 @@
-import React, { useCallback, useEffect } from 'react';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
-import { useColorScheme, TouchableOpacity } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
 import { MaterialIcons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as SplashScreen from 'expo-splash-screen';
+import React, { useCallback, useEffect } from 'react';
+import { TouchableOpacity, useColorScheme } from 'react-native';
 import { useGlobalStore } from '../store/global';
 
-import DashboardScreen from '@/screens/DashboardScreen';
-import ContasAPagarScreen from '@/screens/ContasAPagarScreen';
-import ContasAReceberScreen from '@/screens/ContasAReceberScreen';
-import UploadNotaScreen from '@/screens/UploadNotaScreen';
-import JobStatusScreen from '@/screens/JobStatusScreen';
-import HomeScreen from '@/screens/HomeScreen';
-import { useTheme } from '@/theme/ThemeProvider';
 import CustomDrawerContent from '@/components/CustomDrawerContent';
-import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
-import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
-import ClassifyNotasKanbanScreen from '@/screens/ClassifyNotasKanbanScreen';
-import NotasFiscaisScreen from '@/screens/NotasFiscaisScreen';
-import NotaFiscalDetailScreen from '@/screens/NotaFiscalDetailScreen';
-import Splash from '@/screens/SplashScreen';
 import withErrorBoundary from '@/components/withErrorBoundary';
 import CalendarScreen from '@/screens/CalendarScreen';
+import ClassifyCompanyScreen from '@/screens/ClassifyCompanyScreen';
+import ClassifyNotasKanbanScreen from '@/screens/ClassifyNotasKanbanScreen';
+import ContasAPagarScreen from '@/screens/ContasAPagarScreen';
+import ContasAReceberScreen from '@/screens/ContasAReceberScreen';
+import DashboardScreen from '@/screens/DashboardScreen';
+import HomeScreen from '@/screens/HomeScreen';
+import JobStatusScreen from '@/screens/JobStatusScreen';
+import NotaFiscalDetailScreen from '@/screens/NotaFiscalDetailScreen';
+import NotasFiscaisScreen from '@/screens/NotasFiscaisScreen';
+import Splash from '@/screens/SplashScreen';
+import UnclassifiedCompaniesScreen from '@/screens/UnclassifiedCompaniesScreen';
+import UploadNotaScreen from '@/screens/UploadNotaScreen';
+import { useTheme } from '@/theme/ThemeProvider';
 
 const DashboardScreenWithErrorBoundary = withErrorBoundary(DashboardScreen);
 const ContasAPagarScreenWithErrorBoundary = withErrorBoundary(ContasAPagarScreen);
@@ -106,6 +106,7 @@ function AppDrawer() {
         component={MainTabs}
         options={{
           title: 'Gestão de Notas',
+          headerTitleStyle: { left: 60 },
           drawerIcon: ({ color, size }) => <MaterialIcons name="account-balance" size={size} color={color} />,
         }}
       />
@@ -114,6 +115,7 @@ function AppDrawer() {
         component={JobStatusScreenWithErrorBoundary}
         options={{
           title: 'Status do Job',
+          headerTitleStyle: { left: 70 },
           drawerIcon: ({ color, size }) => <MaterialIcons name="sync" size={size} color={color} />,
         }}
       />
@@ -122,6 +124,7 @@ function AppDrawer() {
         component={ClassifyNotasKanbanScreenWithErrorBoundary}
         options={{
           title: 'Classificar Notas',
+          headerTitleStyle: { left: 60 },
           drawerIcon: ({ color, size }) => <MaterialIcons name="class" size={size} color={color} />,
         }}
       />
@@ -130,6 +133,7 @@ function AppDrawer() {
         component={NotasFiscaisScreenWithErrorBoundary}
         options={{
           title: 'Notas Fiscais',
+          headerTitleStyle: { left: 70 },
           drawerIcon: ({ color, size }) => <MaterialIcons name="receipt" size={size} color={color} />,
         }}
       />
@@ -138,6 +142,7 @@ function AppDrawer() {
         component={CalendarScreenWithErrorBoundary}
         options={{
           title: 'Calendário',
+          headerTitleStyle: { left: 90 },
           drawerIcon: ({ color, size }) => <MaterialIcons name="event" size={size} color={color} />,
         }}
       />
