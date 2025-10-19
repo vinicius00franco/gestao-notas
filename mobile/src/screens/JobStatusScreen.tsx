@@ -1,10 +1,10 @@
-import React, { useMemo, useState, useRef } from 'react';
-import { View, Text, Alert, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useListJobsPendentes, useListJobsConcluidos, useListJobsErros, useReprocessJob, useDeleteJob } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { JobStatus, PaginatedResponse } from '@/types';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useDeleteJob, useListJobsConcluidos, useListJobsErros, useListJobsPendentes, useReprocessJob } from '../hooks/api';
 
 const JobItem = ({ item }: { item: JobStatus }) => {
   const reprocessJob = useReprocessJob();
@@ -175,7 +175,7 @@ export default function JobStatusScreen() {
             return null;
           }}
           ListEmptyComponent={() => (
-            <View style={{ padding: 24 }}>
+            <View style={{ padding: 24, alignItems: 'center' }}>
               <Text>Nenhuma nota nesta categoria.</Text>
             </View>
           )}

@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, FlatList } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../theme/ThemeProvider';
 import { useDashboard } from '../hooks/api';
+import { useTheme } from '../theme/ThemeProvider';
 import { TopFornecedor } from '../types';
 
 export default function DashboardScreen() {
@@ -15,7 +14,7 @@ export default function DashboardScreen() {
     errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     errorText: { ...theme.typography.h2, color: theme.colors.error },
     header: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
-    title: { ...theme.typography.h1 },
+    title: { ...theme.typography.h2 },
     listContainer: {
       paddingHorizontal: 16,
     },
