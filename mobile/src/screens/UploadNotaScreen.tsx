@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, Button, TextInput, Platform } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
 import { useNavigation } from '@react-navigation/native';
-import { useUploadNota } from '../hooks/api';
+import * as DocumentPicker from 'expo-document-picker';
+import { useState } from 'react';
+import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
+import { useUploadNota } from '../hooks/api';
 
 export default function UploadNotaScreen() {
   const [cnpj, setCnpj] = useState('');
@@ -48,7 +48,9 @@ export default function UploadNotaScreen() {
   return (
     <View style={{ padding: 16, gap: 12 }}>
       <Text>Selecione o arquivo da Nota Fiscal</Text>
-      <Button title={file ? `Selecionado: ${file.name}` : 'Escolher arquivo'} onPress={pickFile} />
+      <TouchableOpacity style={styles.button} onPress={pickFile} activeOpacity={0.7}>
+        <Text style={styles.buttonText}>{file ? `Selecionado: ${file.name}` : 'Escolher arquivo'}</Text>
+      </TouchableOpacity>
       <Text>Informe o CNPJ da sua empresa (opcional)</Text>
       <TextInput
         value={cnpj}
@@ -57,7 +59,38 @@ export default function UploadNotaScreen() {
         keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'number-pad'}
         style={{ borderWidth: 1, borderColor: '#ddd', padding: 8, borderRadius: 6 }}
       />
-      <Button title={isPending ? 'Enviando...' : 'Processar Nota'} disabled={!file || isPending} onPress={onSubmit} />
+      <TouchableOpacity
+        style={[styles.button, (!file || isPending) && styles.buttonDisabled]}
+        disabled={!file || isPending}
+        onPress={onSubmit}
+        activeOpacity={0.7}>
+        <Text style={[styles.buttonText, (!file || isPending) && styles.buttonTextDisabled]}>
+          {isPending ? 'Enviando...' : 'Processar Nota'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonDisabled: {
+    backgroundColor: '#A0A0A0',
+    opacity: 0.6,
+  },
+  buttonTextDisabled: {
+    color: '#E0E0E0',
+  },
+});

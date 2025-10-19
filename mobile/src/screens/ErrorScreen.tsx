@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 
 interface Props {
@@ -13,7 +13,9 @@ const ErrorScreen: React.FC<Props> = ({ onRetry }) => {
       <Text style={styles.message}>
         Não foi possível concluir sua solicitação. Por favor, tente novamente.
       </Text>
-      <Button title="Tentar Novamente" onPress={onRetry} color={colors.primary} />
+      <TouchableOpacity style={styles.button} onPress={onRetry} activeOpacity={0.7}>
+        <Text style={styles.buttonText}>Tentar Novamente</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -38,6 +40,19 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     marginBottom: 24,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

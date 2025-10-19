@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { View, Text, Button, Alert, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useListJobsPendentes, useListJobsConcluidos, useListJobsErros, useReprocessJob, useDeleteJob } from '../hooks/api';
 import Loading from '@/components/Loading';
 import { JobStatus, PaginatedResponse } from '@/types';
@@ -39,8 +39,24 @@ const JobItem = ({ item }: { item: JobStatus }) => {
       <Text>Status: {item.status.codigo}</Text>
       {item.erro && <Text style={{ color: 'red' }}>Erro: {item.erro}</Text>}
       <View style={styles.buttons}>
-        <Button title="Processar" onPress={handleReprocess} disabled={reprocessJob.isPending} />
-        <Button title="Excluir" onPress={handleDelete} color="#ff3b30" disabled={deleteJob.isPending} />
+        <TouchableOpacity
+          style={[styles.button, reprocessJob.isPending && styles.buttonDisabled]}
+          onPress={handleReprocess}
+          disabled={reprocessJob.isPending}
+          activeOpacity={0.7}>
+          <Text style={[styles.buttonText, reprocessJob.isPending && styles.buttonTextDisabled]}>
+            Processar
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.buttonDestructive, deleteJob.isPending && styles.buttonDisabled]}
+          onPress={handleDelete}
+          disabled={deleteJob.isPending}
+          activeOpacity={0.7}>
+          <Text style={[styles.buttonText, deleteJob.isPending && styles.buttonTextDisabled]}>
+            Excluir
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -181,6 +197,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  buttonDestructive: {
+    backgroundColor: '#ff3b30',
+  },
+  buttonDisabled: {
+    backgroundColor: '#A0A0A0',
+    opacity: 0.6,
+  },
+  buttonTextDisabled: {
+    color: '#E0E0E0',
   },
   header: {
     padding: 16,

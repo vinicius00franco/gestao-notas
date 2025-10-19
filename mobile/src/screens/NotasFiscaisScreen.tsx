@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, Button, Alert } from 'react-native';
+import { View, Text, FlatList, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useNotasFiscais, useDeleteNotaFiscal } from '../hooks/api';
 import Loading from '@/components/Loading';
@@ -36,7 +36,9 @@ function NotasFiscaisScreen() {
         <Text style={{ fontSize: 14, color: 'gray' }}>
           {error?.message || 'Erro desconhecido'}
         </Text>
-        <Button title="Tentar Novamente" onPress={() => refetch()} />
+        <TouchableOpacity style={styles.button} onPress={() => refetch()} activeOpacity={0.7}>
+          <Text style={styles.buttonText}>Tentar Novamente</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -53,15 +55,18 @@ function NotasFiscaisScreen() {
             right={
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ marginRight: 12 }}>{formatCurrencyBRL(item.valor_total)}</Text>
-                <Button
-                  title="Ver"
+                <TouchableOpacity
+                  style={styles.button}
                   onPress={() => navigation.navigate('NotaFiscalDetail', { nota: item })}
-                />
-                <Button
-                  title="Excluir"
+                  activeOpacity={0.7}>
+                  <Text style={styles.buttonText}>Ver</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.buttonDestructive]}
                   onPress={() => handleDelete(item.uuid)}
-                  color="red"
-                />
+                  activeOpacity={0.7}>
+                  <Text style={styles.buttonText}>Excluir</Text>
+                </TouchableOpacity>
               </View>
             }
           />
@@ -71,5 +76,25 @@ function NotasFiscaisScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  buttonDestructive: {
+    backgroundColor: '#ff3b30',
+  },
+});
 
 export default withErrorBoundary(NotasFiscaisScreen);

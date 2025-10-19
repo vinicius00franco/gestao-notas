@@ -1,7 +1,7 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
-import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useClassifyCompany } from '../hooks/api';
 import { UnclassifiedCompany } from '../types';
 
@@ -112,7 +112,13 @@ export default function ClassifyCompanyScreen() {
         <Picker.Item label="Outra Empresa" value="outra_empresa" />
         <Picker.Item label="Outro" value="outro" />
       </Picker>
-      <Button title="Save" onPress={handleSubmit} disabled={isPending} />
+      <TouchableOpacity
+        style={[styles.button, isPending && styles.buttonDisabled]}
+        onPress={handleSubmit}
+        disabled={isPending}
+        activeOpacity={0.7}>
+        <Text style={[styles.buttonText, isPending && styles.buttonTextDisabled]}>Save</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -138,5 +144,26 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 6,
     marginBottom: 12,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonDisabled: {
+    backgroundColor: '#A0A0A0',
+    opacity: 0.6,
+  },
+  buttonTextDisabled: {
+    color: '#E0E0E0',
   },
 });

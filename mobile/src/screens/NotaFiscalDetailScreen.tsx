@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NotaFiscal } from '@/types';
 import withErrorBoundary from '@/components/withErrorBoundary';
@@ -40,11 +40,12 @@ function NotaFiscalDetailScreen() {
       <Text>Valor: {String(nota.valor_total)}</Text>
       <Text>CNPJ Emitente: {nota.parceiro?.cnpj}</Text>
       <Text>Nome Emitente: {nota.parceiro?.nome}</Text>
-      <Button
-        title="Excluir"
+      <TouchableOpacity
+        style={styles.button}
         onPress={() => handleDelete(nota.uuid)}
-        color="red"
-      />
+        activeOpacity={0.7}>
+        <Text style={styles.buttonText}>Excluir</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -58,6 +59,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 16,
+  },
+  button: {
+    backgroundColor: '#ff3b30',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

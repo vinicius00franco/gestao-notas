@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { useTheme } from '@/theme/ThemeProvider';
-import { useCalendarResumo, useCalendarDia, useContasAPagar, useContasAReceber } from '../hooks/api';
-import { formatCurrencyBRL } from '../utils/format';
-import { Lancamento } from '../types';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { CalendarDiaItem } from '../api/services/calendarService';
+import { useCalendarDia, useCalendarResumo, useContasAPagar, useContasAReceber } from '../hooks/api';
+import { Lancamento } from '../types';
+import { formatCurrencyBRL } from '../utils/format';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
@@ -156,8 +156,10 @@ const styles = StyleSheet.create({
   detailHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    flex: 1,
     alignItems: 'center',
     marginBottom: 16,
+    flexWrap: 'wrap',
   },
   detailItem: {
     paddingVertical: 12,

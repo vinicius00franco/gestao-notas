@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { Button, FlatList, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useUnclassifiedCompanies } from '../hooks/api';
 import { UnclassifiedCompany } from '../types';
 
@@ -25,13 +25,32 @@ export default function UnclassifiedCompaniesScreen() {
           <View style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#ccc' }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.nome_fantasia}</Text>
             <Text>{item.cnpj}</Text>
-            <Button
-              title="Classify"
+            <TouchableOpacity
+              style={styles.button}
               onPress={() => navigation.navigate('ClassifyCompany', { company: item })}
-            />
+              activeOpacity={0.7}>
+              <Text style={styles.buttonText}>Classify</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
