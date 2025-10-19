@@ -3,6 +3,7 @@
 # Usage: change {{base_url}} to http://localhost:8000 (ou seu host)
 
 @base_url = http://localhost:8000
+@job_uuid = 1 # Replace with a valid job UUID
 
 ### Processar nota fiscal (arquivo multipart)
 ### Envia arquivo (campo `arquivo`) e `meu_cnpj` como form-data
@@ -31,9 +32,79 @@ Content-Type: application/xml
 </nota>
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
+### Job Management ###
+
+### Listar todos os jobs
+GET {{base_url}}/api/jobs/ HTTP/1.1
+
+### Listar jobs pendentes
+GET {{base_url}}/api/jobs/pendentes/ HTTP/1.1
+
+### Listar jobs concluídos
+GET {{base_url}}/api/jobs/concluidos/ HTTP/1.1
+
+### Listar jobs com erro
+GET {{base_url}}/api/jobs/erros/ HTTP/1.1
+
 ### Obter status do job
 ### Retorna status de processamento e possivelmente resultados
-GET {{base_url}}/api/jobs/1/ HTTP/1.1
+GET {{base_url}}/api/jobs/{{job_uuid}}/ HTTP/1.1
+
+### Reprocessar um job
+POST {{base_url}}/api/jobs/{{job_uuid}}/ HTTP/1.1
+
+### Deletar um job
+DELETE {{base_url}}/api/jobs/{{job_uuid}}/ HTTP/1.1
+
+
+### Financial/Calendar ###
+
+### Resumo mensal do calendário
+GET {{base_url}}/api/calendar-resumo/ HTTP/1.1
+
+### Detalhes diários do calendário
+GET {{base_url}}/api/calendar-dia/ HTTP/1.1
+
+
+### Invoice Management ###
+
+### Listar notas fiscais
+GET {{base_url}}/api/notas-fiscais/ HTTP/1.1
+
+### Criar nota fiscal
+POST {{base_url}}/api/notas-fiscais/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "chave": "00000000000000000000000000000000000000000001",
+  "valor": 100.00
+}
+
+### Atualizar nota fiscal
+PUT {{base_url}}/api/notas-fiscais/1/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "valor": 150.00
+}
+
+### Deletar nota fiscal
+DELETE {{base_url}}/api/notas-fiscais/1/ HTTP/1.1
+
+
+### Company Management ###
+
+### Listar empresas não classificadas
+GET {{base_url}}/api/unclassified-companies/ HTTP/1.1
+
+### Contas a pagar
+GET {{base_url}}/api/contas-a-pagar/ HTTP/1.1
+
+### Contas a receber
+GET {{base_url}}/api/contas-a-receber/ HTTP/1.1
+
+### Dashboard (estatísticas)
+GET {{base_url}}/api/dashboard/ HTTP/1.1
 
 ### Exemplo de resposta (202) para POST /api/processar-nota/
 HTTP/1.1 202 Accepted
@@ -44,7 +115,7 @@ Content-Type: application/json
   "status": {"codigo": "PENDENTE", "descricao": "Pendente"}
 }
 
-### Exemplo de resposta (200) para GET /api/jobs/1/
+### Exemplo de resposta (200) para GET /api/jobs/{{job_uuid}}/
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -54,12 +125,3 @@ Content-Type: application/json
   "mensagem_erro": null,
   "dt_conclusao": "2025-09-28T12:34:56Z"
 }
-
-### Contas a pagar
-GET {{base_url}}/api/contas-a-pagar/ HTTP/1.1
-
-### Contas a receber
-GET {{base_url}}/api/contas-a-receber/ HTTP/1.1
-
-### Dashboard (estatísticas)
-GET {{base_url}}/api/dashboard/ HTTP/1.1

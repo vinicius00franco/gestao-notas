@@ -1,0 +1,16 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — GET /api/unclassified-companies/"
+
+participant "Cliente" as C
+participant "UnclassifiedCompaniesView" as V
+participant "Parceiro" as P
+participant "ParceiroSerializer" as S
+
+C->>V: GET /api/unclassified-companies/
+V->>P: Parceiro.objects.filter(clf_tipo=None)
+P-->>V: parceiros
+V->>S: ParceiroSerializer(parceiros, many=True)
+S-->>V: serialized_parceiros
+V-->>C: 200 OK [serialized_parceiros]
+@enduml

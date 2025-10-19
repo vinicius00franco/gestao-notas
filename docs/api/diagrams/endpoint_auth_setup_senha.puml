@@ -1,0 +1,20 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — POST /api/auth/setup-senha/"
+
+participant "Cliente" as C
+participant "SetupSenhaView" as V
+participant "EmpresaSerializer" as S
+participant "MinhaEmpresa" as E
+
+C->>V: POST /api/auth/setup-senha/ {cnpj, senha}
+V->>S: serializer.is_valid()
+S-->>V: validated_data
+V->>E: MinhaEmpresa.objects.get(cnpj=validated_data['cnpj'])
+E-->>V: empresa
+V->>E: empresa.set_password(validated_data['senha'])
+E-->>V:
+V->>E: empresa.save()
+E-->>V:
+V-->>C: 200 OK {ok, empresa}
+@enduml

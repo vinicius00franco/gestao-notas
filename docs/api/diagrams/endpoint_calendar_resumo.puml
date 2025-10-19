@@ -1,0 +1,16 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — GET /api/calendar-resumo/"
+
+participant "Cliente" as C
+participant "CalendarResumoView" as V
+participant "LancamentoFinanceiro" as LF
+participant "CalendarResumoSerializer" as S
+
+C->>V: GET /api/calendar-resumo/
+V->>LF: LancamentoFinanceiro.objects.values('data_vencimento__month', 'data_vencimento__year').annotate(...)
+LF-->>V: aggregated_data
+V->>S: CalendarResumoSerializer(aggregated_data, many=True)
+S-->>V: serialized_data
+V-->>C: 200 OK [serialized_data]
+@enduml

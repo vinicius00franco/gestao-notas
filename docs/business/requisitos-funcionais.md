@@ -110,3 +110,12 @@
 - Suportar múltiplas versões simultaneamente
 - Implementar fallback para versões intermediárias
 - Manter compatibilidade com versões anteriores
+
+## RF011 - Calendário Financeiro
+**Descrição:** O sistema deve fornecer uma visão de calendário para os lançamentos financeiros.
+**Entrada:** Requisição de resumo mensal ou diário
+**Saída:** Dados agregados por mês ou detalhados por dia
+**Prioridade:** Média
+**Critérios de Aceitação:**
+- Fornecer um resumo mensal de contas a pagar e a receber.
+- Fornecer uma lista detalhada de lançamentos para um dia específico.

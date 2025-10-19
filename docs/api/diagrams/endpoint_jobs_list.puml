@@ -1,0 +1,16 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — GET /api/jobs/"
+
+participant "Cliente" as C
+participant "JobListView" as V
+participant "JobProcessamento" as J
+participant "JobProcessamentoSerializer" as S
+
+C->>V: GET /api/jobs/
+V->>J: JobProcessamento.objects.all()
+J-->>V: jobs
+V->>S: JobProcessamentoSerializer(jobs, many=True)
+S-->>V: serialized_jobs
+V-->>C: 200 OK [serialized_jobs]
+@enduml

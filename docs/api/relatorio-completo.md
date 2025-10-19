@@ -157,20 +157,45 @@ flowchart LR
 ## 5. Endpoints de API
 
 Prefixos principais em `backend/urls.py`:
-- `/api/` inclui: processamento, financeiro, dashboard, empresa
+- `/api/` inclui: processamento, financeiro, dashboard, empresa, notas, etc.
 - `/api/notifications/` inclui: registro e polling/ack
 
 Endpoints e métodos:
+
+### Autenticação e Empresa
 - POST `/api/auth/login/` (empresa): body `{cnpj, senha}` → `{access, refresh, empresa}`
 - POST `/api/auth/setup-senha/`: body `{cnpj, senha}` → `{ok, empresa}`
+- GET `/api/unclassified-companies/`: → Lista de empresas não classificadas.
+
+### Processamento de Notas e Jobs
 - POST `/api/processar-nota/`: multipart `{arquivo, meu_cnpj}` → `202 {uuid, status}`
+- GET `/api/jobs/`: → Lista de todos os jobs de processamento.
+- GET `/api/jobs/pendentes/`: → Lista de jobs com status PENDENTE.
+- GET `/api/jobs/concluidos/`: → Lista de jobs com status CONCLUIDO.
+- GET `/api/jobs/erros/`: → Lista de jobs com status FALHA.
 - GET `/api/jobs/<uuid>/`: → `{uuid, status, dt_criacao, dt_conclusao, mensagem_erro}`
+- POST `/api/jobs/<uuid>/`: → Reprocessa um job específico.
+- DELETE `/api/jobs/<uuid>/`: → Deleta um job específico.
+
+### Financeiro e Calendário
 - GET `/api/contas-a-pagar/` → `[LancamentoFinanceiro]` (depth=2 inclui parceiro)
 - GET `/api/contas-a-receber/` → `[LancamentoFinanceiro]`
+- GET `/api/calendar-resumo/`: → Resumo financeiro mensal.
+- GET `/api/calendar-dia/`: → Detalhes financeiros de um dia específico.
+
+### Gestão de Notas Fiscais (CRUD)
+- GET `/api/notas-fiscais/`: → Lista de todas as notas fiscais.
+- POST `/api/notas-fiscais/`: → Cria uma nova nota fiscal.
+- PUT `/api/notas-fiscais/<id>/`: → Atualiza uma nota fiscal existente.
+- DELETE `/api/notas-fiscais/<id>/`: → Deleta uma nota fiscal.
+
+### Dashboard e Notificações
 - GET `/api/dashboard/` → `{top_5_fornecedores_pendentes: [...]}`
 - POST `/api/notifications/register-device/` → `{id, token, platform, ...}`
 - GET `/api/notifications/pending/` → `[{Notification}]`
 - POST `/api/notifications/ack/` → `{ok: true}`
+
+### Healthcheck
 - GET `/healthz` — healthcheck (DB)
 
 Permissões/Autenticação:

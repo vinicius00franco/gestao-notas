@@ -1,0 +1,18 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — POST /api/notifications/register-device/"
+
+participant "Cliente" as C
+participant "RegisterDeviceView" as V
+participant "DeviceSerializer" as S
+participant "Device" as D
+
+C->>V: POST /api/notifications/register-device/ {token, platform}
+V->>S: DeviceSerializer(data=request.data)
+S-->>V: serializer
+V->>S: serializer.is_valid()
+S-->>V: True
+V->>S: serializer.save()
+S-->>V: new_device
+V-->>C: 201 Created {serialized_device}
+@enduml

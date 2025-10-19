@@ -1,0 +1,51 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — CRUD /api/notas-fiscais/"
+
+participant "Cliente" as C
+participant "NotaFiscalViewSet" as V
+participant "NotaFiscal" as M
+participant "NotaFiscalSerializer" as S
+
+group GET /api/notas-fiscais/
+    C->>V: GET /api/notas-fiscais/
+    V->>M: NotaFiscal.objects.all()
+    M-->>V: notas_fiscais
+    V->>S: NotaFiscalSerializer(notas_fiscais, many=True)
+    S-->>V: serialized_notas
+    V-->>C: 200 OK [serialized_notas]
+end
+
+group POST /api/notas-fiscais/
+    C->>V: POST /api/notas-fiscais/ {data}
+    V->>S: NotaFiscalSerializer(data=data)
+    S-->>V: serializer
+    V->>S: serializer.is_valid()
+    S-->>V: True
+    V->>S: serializer.save()
+    S-->>V: new_nota_fiscal
+    V-->>C: 201 Created {serialized_nota}
+end
+
+group PUT /api/notas-fiscais/<id>/
+    C->>V: PUT /api/notas-fiscais/<id>/ {data}
+    V->>M: NotaFiscal.objects.get(pk=id)
+    M-->>V: nota_fiscal
+    V->>S: NotaFiscalSerializer(nota_fiscal, data=data)
+    S-->>V: serializer
+    V->>S: serializer.is_valid()
+    S-->>V: True
+    V->>S: serializer.save()
+    S-->>V: updated_nota_fiscal
+    V-->>C: 200 OK {serialized_nota}
+end
+
+group DELETE /api/notas-fiscais/<id>/
+    C->>V: DELETE /api/notas-fiscais/<id>/
+    V->>M: NotaFiscal.objects.get(pk=id)
+    M-->>V: nota_fiscal
+    V->>M: nota_fiscal.delete()
+    M-->>V:
+    V-->>C: 204 No Content
+end
+@enduml

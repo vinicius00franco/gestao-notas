@@ -1,0 +1,21 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — POST /api/auth/login/"
+
+participant "Cliente" as C
+participant "LoginView" as V
+participant "EmpresaSerializer" as S
+participant "MinhaEmpresa" as E
+participant "JWT" as JWT
+
+C->>V: POST /api/auth/login/ {cnpj, senha}
+V->>S: serializer.is_valid()
+S-->>V: validated_data
+V->>E: MinhaEmpresa.objects.get(cnpj=validated_data['cnpj'])
+E-->>V: empresa
+V->>E: empresa.check_password(validated_data['senha'])
+E-->>V: True
+V->>JWT: get_tokens_for_user(empresa)
+JWT-->>V: {access, refresh}
+V-->>C: 200 OK {access, refresh, empresa}
+@enduml

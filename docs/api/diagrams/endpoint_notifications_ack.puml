@@ -1,0 +1,15 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — POST /api/notifications/ack/"
+
+participant "Cliente" as C
+participant "AckNotificationView" as V
+participant "Notification" as N
+
+C->>V: POST /api/notifications/ack/ {notification_ids}
+V->>N: Notification.objects.filter(id__in=notification_ids)
+N-->>V: notifications
+V->>N: notifications.update(delivered=True)
+N-->>V:
+V-->>C: 200 OK {ok: true}
+@enduml
