@@ -1,166 +1,145 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, Modal, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { useTheme } from '@/theme/ThemeProvider';
-import { useCalendarResumo, useCalendarDia } from '../hooks/api';
+import { useCalendarResumo, useCalendarDia, useContasAPagar, useContasAReceber } from '../hooks/api';
 import { formatCurrencyBRL } from '../utils/format';
+import { Lancamento } from '../types';
+import { CalendarDiaItem } from '../api/services/calendarService';
 
-// Configure Portuguese locale once
 LocaleConfig.locales['pt-br'] = {
-  monthNames: [
-    'Janeiro',
-    'Fevereiro',
-    'Março',
-    'Abril',
-    'Maio',
-    'Junho',
-    'Julho',
-    'Agosto',
-    'Setembro',
-    'Outubro',
-    'Novembro',
-    'Dezembro',
-  ],
-  monthNamesShort: [
-    'Jan',
-    'Fev',
-    'Mar',
-    'Abr',
-    'Mai',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Set',
-    'Out',
-    'Nov',
-    'Dez',
-  ],
+  monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+  monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
   dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
   dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
   today: 'Hoje',
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
-const formatDate = (d: Date) => d.toISOString().slice(0, 10);
-
 type DateData = { dateString: string; day: number; month: number; year: number; timestamp: number };
 type MarkedDates = Record<string, any>;
 
+const LancamentoCalendarItem = ({ item, colors, typography }: { item: CalendarDiaItem; colors: any; typography: any }) => {
+  const isPagar = item.tipo === 'PAGAR';
+  return (
+    <View style={[styles.detailItem, { borderBottomColor: colors.border }]}>
+      <Text style={[typography.body, { color: colors.text, fontWeight: 'bold' }]}>{item.nome_fantasia}</Text>
+      <Text style={[typography.body, { color: isPagar ? colors.error : colors.secondary }]}>
+        {formatCurrencyBRL(item.valor)}
+      </Text>
+    </View>
+  );
+};
+
+const LancamentoMesItem = ({ item, colors, typography }: { item: Lancamento; colors: any; typography: any }) => {
+    const isPagar = item.clf_tipo.nome === 'A Pagar';
+    return (
+      <View style={[styles.detailItem, { borderBottomColor: colors.border }]}>
+        <Text style={[typography.body, { color: colors.text, fontWeight: 'bold' }]}>{item.descricao} ({item.data_vencimento})</Text>
+        <Text style={[typography.body, { color: isPagar ? colors.error : colors.secondary }]}>
+          {formatCurrencyBRL(item.valor)}
+        </Text>
+      </View>
+    );
+  };
+
 const CalendarScreen = () => {
   const { colors, spacing, typography } = useTheme();
-  const [selected, setSelected] = useState<string>(formatDate(new Date()));
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState<number>(new Date().getMonth() + 1);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const { data: resumoData } = useCalendarResumo(currentYear, currentMonth);
-  const { data: diaData } = useCalendarDia(selected);
+  const { data: diaData, isLoading: isLoadingDia } = useCalendarDia(selectedDate || '');
+
+  const { data: contasAPagar } = useContasAPagar();
+  const { data: contasAReceber } = useContasAReceber();
+  const detalhesDoMes = useMemo(() => [...(contasAPagar || []), ...(contasAReceber || [])].sort((a,b) => a.data_vencimento.localeCompare(b.data_vencimento)), [contasAPagar, contasAReceber]);
 
   const markedDates: MarkedDates = useMemo(() => {
-    const marks: MarkedDates = {
-      [selected]: {
-        selected: true,
-        selectedColor: colors.primary,
-        selectedTextColor: colors.onPrimary,
-      },
-    };
+    const marks: MarkedDates = {};
 
-    // Add financial data dots
-    resumoData?.dias.forEach((dia) => {
-      const dots = [];
-      if (dia.valor_pagar) {
-        dots.push({ color: colors.error });
-      }
-      if (dia.valor_receber) {
-        dots.push({ color: colors.secondary });
-      }
-      if (dots.length > 0) {
-        marks[dia.data] = {
-          ...marks[dia.data],
-          dots,
-        };
-      }
+    resumoData?.dias.forEach((diaInfo) => {
+      const dateString = diaInfo.data;
+      const saldo = (diaInfo.valor_receber ?? 0) - (diaInfo.valor_pagar ?? 0);
+      marks[dateString] = {
+        marked: true,
+        dotColor: saldo > 0 ? colors.secondary : colors.error,
+      };
     });
 
-    return marks;
-  }, [selected, colors.primary, colors.onPrimary, colors.error, colors.secondary, resumoData]);
+    if (selectedDate) {
+      marks[selectedDate] = {
+        ...marks[selectedDate],
+        selected: true,
+        selectedColor: colors.primary,
+      };
+    }
 
-  const calendarTheme = useMemo(
-    () => ({
-      calendarBackground: colors.background,
-      monthTextColor: colors.text,
-      textSectionTitleColor: colors.placeholder, // week day header
-      arrowColor: colors.primary,
-      todayTextColor: colors.error,
-      selectedDayBackgroundColor: colors.primary,
-      selectedDayTextColor: colors.onPrimary,
-      dayTextColor: colors.text,
-      textDisabledColor: colors.border,
-      textDayFontSize: (typography.body.fontSize as number) || 16,
-      textDayFontWeight: 500,
-      textMonthFontWeight: 700,
-      textMonthFontSize: (typography.h2.fontSize as number) || 24,
-      textDayHeaderFontSize: 12,
-    }),
-    [colors, typography],
-  );
+    return marks;
+  }, [resumoData, selectedDate, colors]);
+
+  const calendarTheme = useMemo(() => ({
+    calendarBackground: colors.background,
+    monthTextColor: colors.text,
+    textSectionTitleColor: colors.placeholder,
+    arrowColor: colors.primary,
+    todayTextColor: colors.primary,
+    dayTextColor: colors.text,
+    textDisabledColor: colors.border,
+  }), [colors]);
 
   const onDayPress = (day: DateData) => {
-    setSelected(day.dateString);
-    setModalVisible(true);
+    setSelectedDate(day.dateString);
   };
 
   const onMonthChange = (month: { year: number; month: number }) => {
+    setSelectedDate(null); // Reseta a seleção ao mudar de mês
     setCurrentYear(month.year);
     setCurrentMonth(month.month);
   };
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background, padding: spacing.m }]}>
-      <Calendar
-        onDayPress={onDayPress}
-        onMonthChange={onMonthChange}
-        hideExtraDays
-        markedDates={markedDates}
-        theme={calendarTheme as any}
-        enableSwipeMonths
-        firstDay={1}
-      />
-
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[typography.h2, { color: colors.text }]}>{selected}</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={[typography.body, { color: colors.primary }]}>Fechar</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalBody}>
-              {diaData?.detalhes?.map((item, idx) => (
-                <View key={idx} style={styles.detailItem}>
-                  <Text style={[typography.body, { color: colors.text, fontWeight: 'bold' }]}>
-                    {item.nome_fantasia}
-                  </Text>
-                  <Text style={[typography.caption, { color: colors.placeholder }]}>
-                    CNPJ: {item.cnpj}
-                  </Text>
-                  <Text style={[typography.body, { color: item.tipo === 'PAGAR' ? colors.error : colors.secondary }]}>
-                    {formatCurrencyBRL(item.valor)} ({item.tipo || 'N/A'})
-                  </Text>
-                </View>
-              )) || (
-                <Text style={[typography.body, { color: colors.placeholder }]}>Sem lançamentos</Text>
-              )}
-            </ScrollView>
+  const renderDetailContent = () => {
+    if (selectedDate) {
+      if (isLoadingDia) return <ActivityIndicator color={colors.primary} />;
+      return (
+        <>
+          <View style={styles.detailHeader}>
+            <Text style={[typography.h2, { color: colors.text }]}>Detalhes de {selectedDate}</Text>
+            <TouchableOpacity onPress={() => setSelectedDate(null)}>
+              <Text style={{ color: colors.primary }}>Visão do Mês</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
+          {diaData?.detalhes?.map((item, index) => <LancamentoCalendarItem key={index} item={item} colors={colors} typography={typography} />)}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Text style={[typography.h2, { color: colors.text, marginBottom: spacing.s }]}>Lançamentos do Mês</Text>
+        {detalhesDoMes.map(item => <LancamentoMesItem key={item.uuid} item={item} colors={colors} typography={typography} />)}
+      </>
+    );
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={{ padding: spacing.m }}>
+        <Calendar
+          onDayPress={onDayPress}
+          onMonthChange={onMonthChange}
+          markedDates={markedDates}
+          theme={calendarTheme as any}
+          enableSwipeMonths
+          firstDay={1}
+        />
+      </View>
+      <View style={[styles.detailContainer, { backgroundColor: colors.surface, padding: spacing.m }]}>
+        <ScrollView>
+          {renderDetailContent()}
+        </ScrollView>
+      </View>
     </View>
   );
 };
@@ -169,31 +148,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  modalOverlay: {
+  detailContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
-  modalContent: {
-    width: '90%',
-    maxHeight: '70%',
-    borderRadius: 8,
-    padding: 16,
-  },
-  modalHeader: {
+  detailHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  modalBody: {
-    flex: 1,
-  },
   detailItem: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
 });
 

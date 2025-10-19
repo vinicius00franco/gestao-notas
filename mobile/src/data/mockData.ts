@@ -1,10 +1,11 @@
-import { JobStatus, NotaFiscal, TopFornecedor } from '../types';
+import { JobStatus, NotaFiscal, TopFornecedor, Lancamento } from '../types';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 // --- Estado Simulado ---
-// Uma "tabela" em memória para armazenar os jobs criados durante a sessão.
 export const mockJobsDB: JobStatus[] = [];
+export const mockLancamentosDB: Lancamento[] = [];
+
 
 // --- Tipos e Status ---
 export const STATUS_OPTIONS = {
@@ -13,6 +14,64 @@ export const STATUS_OPTIONS = {
   CONCLUIDO: { codigo: 'CONCLUIDO', descricao: 'Processamento concluído com sucesso' },
   ERRO: { codigo: 'ERRO', descricao: 'Falha ao processar a nota' },
 };
+
+// --- Gerador de Dados Mockados para Lançamentos ---
+const generateMockLancamentos = () => {
+  // Previne a duplicação de dados em hot-reloads
+  if (mockLancamentosDB.length > 0) return;
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const contasAPagar = [
+    { desc: "Compra de Fertilizantes NPK", valor: 350.80, dia: 5 },
+    { desc: "Sementes de Alface (5000 un)", valor: 120.00, dia: 8 },
+    { desc: "Manutenção do Trator", valor: 550.00, dia: 15 },
+    { desc: "Combustível para Maquinário", valor: 250.50, dia: 22 },
+  ];
+
+  const contasAReceber = [
+    { desc: "Venda de 50 caixas de Alface", valor: 750.00, dia: 10 },
+    { desc: "Pagamento - Supermercado X", valor: 1200.00, dia: 18 },
+    { desc: "Venda de 100kg de Caqui Fuyu", valor: 450.75, dia: 25 },
+    { desc: "Pagamento - Atacadista Y", valor: 980.60, dia: 28 },
+  ];
+
+  contasAPagar.forEach(conta => {
+    const vencimento = new Date(year, month, conta.dia).toISOString().split('T')[0];
+    mockLancamentosDB.push({
+      uuid: uuidv4(),
+      descricao: conta.desc,
+      valor: conta.valor,
+      data_vencimento: vencimento,
+      data_pagamento: null,
+      clf_tipo: { nome: 'A Pagar' },
+      clf_status: { nome: 'Pendente' },
+      dt_criacao: today.toISOString(),
+      dt_alteracao: today.toISOString(),
+    });
+  });
+
+  contasAReceber.forEach(conta => {
+    const vencimento = new Date(year, month, conta.dia).toISOString().split('T')[0];
+    mockLancamentosDB.push({
+      uuid: uuidv4(),
+      descricao: conta.desc,
+      valor: conta.valor,
+      data_vencimento: vencimento,
+      data_pagamento: null,
+      clf_tipo: { nome: 'A Receber' },
+      clf_status: { nome: 'Pendente' },
+      dt_criacao: today.toISOString(),
+      dt_alteracao: today.toISOString(),
+    });
+  });
+};
+
+// Gera os dados iniciais ao carregar o módulo
+generateMockLancamentos();
+
 
 // --- Fábricas de Dados Mockados ---
 
@@ -27,47 +86,24 @@ export const createMockJob = (): JobStatus => {
 };
 
 /**
- * Simula a extração de dados de uma nota fiscal, retornando os dados extraídos.
- * Randomicamente decide se a extração é um sucesso, parcial ou uma falha.
+ * Simula a extração de dados de uma nota fiscal.
  */
 export const extractMockNotaData = (): Partial<NotaFiscal> & { success: boolean, partial: boolean, error?: string } => {
   const random = Math.random();
 
-  // 20% de chance de erro
   if (random < 0.2) {
-    return {
-      success: false,
-      partial: false,
-      error: 'QR code ilegível ou formato de nota inválido.',
-    };
+    return { success: false, partial: false, error: 'QR code ilegível.' };
   }
 
-  // 30% de chance de sucesso parcial
   if (random < 0.5) {
-    return {
-      success: true,
-      partial: true,
-      numero: '12345',
-      // cnpj_emitente: null, // Campo faltando. Removido para conformidade de tipo.
-      nome_emitente: 'Fornecedor Exemplo',
-      valor_total: 150.75,
-    };
+    return { success: true, partial: true, numero: '12345', nome_emitente: 'Fornecedor Parcial', valor_total: 150.75 };
   }
 
-  // 50% de chance de sucesso total
-  return {
-    success: true,
-    partial: false,
-    numero: '98765',
-    cnpj_emitente: '12.345.678/0001-99',
-    nome_emitente: 'Empresa de Tecnologia XYZ',
-    valor_total: 1234.56,
-  };
+  return { success: true, partial: false, numero: '98765', cnpj_emitente: '12.345.678/0001-99', nome_emitente: 'Empresa Completa', valor_total: 1234.56 };
 };
 
 /**
  * Gera dados mockados para o dashboard.
- * @param jobs A lista atual de jobs para calcular as métricas.
  */
 export const createMockDashboardData = (jobs: JobStatus[]) => {
   const stats = {
@@ -86,7 +122,7 @@ export const createMockDashboardData = (jobs: JobStatus[]) => {
   return {
     stats,
     top_5_fornecedores_pendentes: topFornecedores,
-    economia_gerada: 450.23, // Valor estático por enquanto
+    economia_gerada: 450.23,
     total_processado: jobs.length,
   };
 };
