@@ -7,8 +7,7 @@ const defineConfig = () => ({
   scheme: 'gestaonotas',
   version: '0.1.0',
   orientation: 'portrait',
-  // If you want custom icons/splash images, place them under mobile/assets and uncomment the entries below.
-  // icon: './assets/icon.png', // crie os assets se desejar customizar
+  icon: './assets/adaptive-icon.png',
   userInterfaceStyle: 'automatic',
   splash: {
     "image": "./assets/splash.png",
@@ -28,9 +27,10 @@ const defineConfig = () => ({
     supportsTablet: true,
     bundleIdentifier: 'com.gestaonotas.mobile'
   },
-  android: { 
+  android: {
     package: 'com.gestaonotas.mobile',
     adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#FFFFFF'
     }
   },
