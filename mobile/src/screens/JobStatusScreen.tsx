@@ -77,7 +77,7 @@ export default function JobStatusScreen() {
     // Primeiro meio-flip
     anim.value = withTiming(90, { duration: 200 }, () => {
       // Trocar conteúdo na thread JS
-      runOnJS(() => setActiveTab(newIndex))();
+      runOnJS(setActiveTab)(newIndex);
       // Continuar a animação do outro lado
       anim.value = -90;
       anim.value = withTiming(0, { duration: 200 }, () => {
