@@ -3,6 +3,7 @@ declare const process: any;
 const defineConfig = () => ({
   name: 'gestao-notas-mobile',
   slug: 'gestao-notas-mobile',
+  owner: 'pfranco',
   scheme: 'gestaonotas',
   version: '0.1.0',
   orientation: 'portrait',
@@ -38,8 +39,9 @@ const defineConfig = () => ({
     apiBaseUrl: (process as any)?.env?.API_BASE_URL,
     // Add a new APP_MODE variable to control the data source
     appMode: (process as any)?.env?.APP_MODE || 'real', // 'real' or 'mock'
-    // Note: projectId will be added automatically by 'eas init' or you can add it manually
-    // after creating an Expo account and project at https://expo.dev
+    eas: {
+      projectId: "42afdd4a-ca0b-46f0-81f5-cb4826a2170f"
+    }
   }
 });
 

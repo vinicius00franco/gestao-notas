@@ -11,7 +11,13 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_MODE": "mock"
+      }
     },
     "production": {}
   },
