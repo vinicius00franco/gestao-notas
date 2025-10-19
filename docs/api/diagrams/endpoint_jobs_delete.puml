@@ -1,0 +1,15 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — DELETE /api/jobs/<uuid>/"
+
+participant "Cliente" as C
+participant "JobDeleteView" as V
+participant "JobProcessamento" as J
+
+C->>V: DELETE /api/jobs/<uuid>/
+V->>J: JobProcessamento.objects.get(uuid=uuid)
+J-->>V: job
+V->>J: job.delete()
+J-->>V:
+V-->>C: 204 No Content
+@enduml

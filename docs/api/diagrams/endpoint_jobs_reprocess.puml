@@ -1,0 +1,21 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — POST /api/jobs/<uuid>/"
+
+participant "Cliente" as C
+participant "JobReprocessView" as V
+participant "JobProcessamento" as J
+participant "CeleryTaskPublisher" as P
+participant "RabbitMQ" as Q
+
+C->>V: POST /api/jobs/<uuid>/
+V->>J: JobProcessamento.objects.get(uuid=uuid)
+J-->>V: job
+V->>J: job.status = 'PENDENTE'
+V->>J: job.save()
+J-->>V:
+V->>P: publish_processamento_nota(job.id)
+P->>Q: processar_nota_fiscal_task.delay()
+Q-->>P: task_id
+V-->>C: 200 OK {status: "reprocessing scheduled"}
+@enduml

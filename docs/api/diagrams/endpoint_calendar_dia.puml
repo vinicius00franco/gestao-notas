@@ -1,0 +1,16 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — GET /api/calendar-dia/"
+
+participant "Cliente" as C
+participant "CalendarDiaView" as V
+participant "LancamentoFinanceiro" as LF
+participant "LancamentoFinanceiroSerializer" as S
+
+C->>V: GET /api/calendar-dia/?date=YYYY-MM-DD
+V->>LF: LancamentoFinanceiro.objects.filter(data_vencimento=date)
+LF-->>V: lancamentos
+V->>S: LancamentoFinanceiroSerializer(lancamentos, many=True)
+S-->>V: serialized_lancamentos
+V-->>C: 200 OK [serialized_lancamentos]
+@enduml

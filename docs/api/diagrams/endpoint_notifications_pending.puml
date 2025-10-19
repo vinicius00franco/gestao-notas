@@ -1,0 +1,16 @@
+@startuml
+!theme plain
+title "Diagrama de Sequência — GET /api/notifications/pending/"
+
+participant "Cliente" as C
+participant "PendingNotificationsView" as V
+participant "Notification" as N
+participant "NotificationSerializer" as S
+
+C->>V: GET /api/notifications/pending/
+V->>N: Notification.objects.filter(user=request.user, delivered=False)
+N-->>V: notifications
+V->>S: NotificationSerializer(notifications, many=True)
+S-->>V: serialized_notifications
+V-->>C: 200 OK [serialized_notifications]
+@enduml

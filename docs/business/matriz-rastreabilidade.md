@@ -14,6 +14,7 @@
 | **RF008** - Dashboard | - | `GET /api/dashboard/` | `apps/dashboard/views.py`, `apps/dashboard/selectors.py` | - |
 | **RF009** - Auditoria | - | Todos os endpoints (campos automáticos) | `apps/*/models.py` | - |
 | **RF010** - Versionamento API | - | Middleware para `/api/v*/` → `/api/` | `backend/middleware.py` | - |
+| **RF011** - Calendário Financeiro | - | `GET /api/calendar-resumo/`, `GET /api/calendar-dia/` | `apps/financeiro/views.py` | - |
 
 ## Mapeamento Regras de Negócio → Implementação Detalhada
 
@@ -122,10 +123,20 @@
 | Endpoint | Método | Requisito | Status |
 |----------|--------|-----------|--------|
 | `/api/processar-nota/` | POST | RF001 | ✅ Implementado |
-| `/api/jobs/<uuid>/` | GET | RF005 | ✅ Implementado |
+| `/api/jobs/` | GET | RF005 | ✅ Implementado |
+| `/api/jobs/<uuid>/` | GET, POST, DELETE | RF005 | ✅ Implementado |
 | `/api/contas-a-pagar/` | GET | RF006 | ✅ Implementado |
 | `/api/contas-a-receber/` | GET | RF007 | ✅ Implementado |
 | `/api/dashboard/` | GET | RF008 | ✅ Implementado |
+| `/api/calendar-resumo/` | GET | RF011 | ✅ Implementado |
+| `/api/calendar-dia/` | GET | RF011 | ✅ Implementado |
+| `/api/notas-fiscais/` | GET, POST, PUT, DELETE | - | ✅ Implementado |
+| `/api/unclassified-companies/` | GET | - | ✅ Implementado |
+| `/api/auth/login/` | POST | - | ✅ Implementado |
+| `/api/auth/setup-senha/` | POST | - | ✅ Implementado |
+| `/api/notifications/register-device/` | POST | - | ✅ Implementado |
+| `/api/notifications/pending/` | GET | - | ✅ Implementado |
+| `/api/notifications/ack/` | POST | - | ✅ Implementado |
 
 ## Dependências Externas
 
