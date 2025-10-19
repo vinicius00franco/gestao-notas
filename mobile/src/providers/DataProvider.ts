@@ -9,6 +9,9 @@ import * as realCalendarService from '../api/services/calendarService';
 import * as mockServices from './MockDataProvider';
 
 const appMode = Constants.expoConfig?.extra?.appMode || 'real';
+if (__DEV__) {
+	console.log('[DataProvider] appMode =', appMode);
+}
 
 export const JobService = appMode === 'mock' ? mockServices.MockJobService : realJobService;
 export const DashboardService = appMode === 'mock' ? mockServices.MockDashboardService : realDashboardService;

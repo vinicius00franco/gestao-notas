@@ -11,18 +11,30 @@ const NOTIF_CHANNEL_ID = 'gestao-notas-general';
 let CURRENT_DEVICE_TOKEN: string | undefined;
 
 // Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// On web, expo-notifications is not supported and calling APIs can throw.
+try {
+  if (Platform.OS !== 'web') {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+} catch (e) {
+  // Silence unsupported platform errors to avoid breaking the app on web
+  // console.warn('notifications: setNotificationHandler not available on this platform', e);
+}
 
 export async function configureNotifications({ onNotification }: { onNotification?: (n: any) => void } = {}) {
   try {
+    // Skip entirely on web
+    if (Platform.OS === 'web') {
+      return;
+    }
     // Skip notification configuration in Expo Go since push notifications are not fully supported
     // Local notifications still work, but remote push notifications require a development build
     if (__DEV__) {
@@ -44,7 +56,7 @@ export async function configureNotifications({ onNotification }: { onNotificatio
       return;
     }
 
-    // Production build configuration (requires development build or standalone app)
+  // Production build configuration (requires development build or standalone app)
     // Request permissions
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;

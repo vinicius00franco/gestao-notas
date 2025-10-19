@@ -34,7 +34,7 @@ const defineConfig = () => ({
       backgroundColor: '#FFFFFF'
     }
   },
-  // web: { bundler: 'metro', output: 'static', favicon: './assets/favicon.png' },
+  // web: { bundler: 'metro', output: 'static' },
   extra: {
     apiBaseUrl: (process as any)?.env?.API_BASE_URL,
     // Add a new APP_MODE variable to control the data source

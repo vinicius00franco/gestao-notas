@@ -181,6 +181,7 @@ export default function RootNavigator() {
   };
 
   if (!isDBReady) {
+    // Render a visible fallback while waiting DB init to avoid a blank page
     return <Splash />;
   }
 
