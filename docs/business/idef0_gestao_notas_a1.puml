@@ -1,0 +1,73 @@
+@startuml IDEF0_GestaoNotas_A1
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Sistema de Gestão de Notas Fiscais - IDEF0 Decomposição (A1)
+
+' Entradas
+agent "Arquivos NF\n(PDF/XML/IMG)" as Input1
+agent "CNPJ Empresa" as Input2
+agent "Dados Classificação\nParceiros" as Input3
+
+' Processos
+rectangle "RECEBER E VALIDAR\nNOTAS FISCAIS\n\nA1" as A1
+rectangle "EXTRAIR DADOS\nDAS NOTAS\n\nA2" as A2
+rectangle "CLASSIFICAR E\nPERSISTIR DADOS\n\nA3" as A3
+rectangle "GERAR LANÇAMENTOS\nFINANCEIROS\n\nA4" as A4
+rectangle "GERAR RELATÓRIOS\nE DASHBOARDS\n\nA5" as A5
+
+' Controles
+agent "Regras Validação\nFormatos Aceitos" as Control1
+agent "Estratégias Extração\nConfiguração LLM" as Control2
+agent "Regras Classificação\nPolíticas Duplicidade" as Control3
+agent "Regras Financeiras\nTipos Lançamento" as Control4
+agent "Templates Relatórios\nConfiguração KPIs" as Control5
+
+' Saídas
+agent "Logs Validação\nErros Upload" as Output1
+agent "Dados Estruturados\nMetadados" as Output2
+agent "Parceiros Criados\nEmpresas Classificadas" as Output3
+agent "Contas a Pagar\nContas a Receber" as Output4
+agent "Dashboards\nRelatórios\nNotificações" as Output5
+
+' Mecanismos
+agent "Django REST\nValidadores" as Mech1
+agent "LLM Chains\nOCR/PDF Parsers" as Mech2
+agent "PostgreSQL\nObserver Pattern" as Mech3
+agent "Strategy Pattern\nCelery Tasks" as Mech4
+agent "Query Selectors\nGrafana" as Mech5
+
+' Fluxo de dados entre processos
+Input1 --> A1
+Input2 --> A1
+A1 --> A2 : Arquivos\nValidados
+A2 --> A3 : Dados\nExtraídos
+Input3 --> A3
+A3 --> A4 : Notas\nClassificadas
+A4 --> A5 : Lançamentos\nCriados
+
+' Controles
+Control1 -down-> A1
+Control2 -down-> A2
+Control3 -down-> A3
+Control4 -down-> A4
+Control5 -down-> A5
+
+' Saídas
+A1 --> Output1
+A2 --> Output2
+A3 --> Output3
+A4 --> Output4
+A5 --> Output5
+
+' Mecanismos
+Mech1 -up-> A1
+Mech2 -up-> A2
+Mech3 -up-> A3
+Mech4 -up-> A4
+Mech5 -up-> A5
+
+@enduml

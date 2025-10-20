@@ -1,0 +1,142 @@
+@startuml IDEF1_GestaoNotas
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Sistema de Gestão de Notas Fiscais - IDEF1 (Modelo de Dados)
+
+' Entidades principais
+entity "MinhaEmpresa" as empresa {
+  * cnpj_numero : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * nome : String
+  * cnpj : String
+  senha_hash : String
+  dt_criacao : DateTime
+  dt_alteracao : DateTime
+}
+
+entity "EmpresaNaoClassificada" as empresa_nc {
+  * cnpj_numero : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * cnpj : String
+  * nome_fantasia : String
+  * razao_social : String
+  * uf : String
+  * cidade : String
+  logradouro : String
+  numero : String
+  bairro : String
+  cep : String
+  telefone : String
+  email : String
+  dt_criacao : DateTime
+}
+
+entity "JobProcessamento" as job {
+  * id : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * arquivo_original : FileField
+  hash_arquivo : String
+  * status : FK(Classificador)
+  empresa : FK(MinhaEmpresa)
+  dt_criacao : DateTime
+  dt_alteracao : DateTime
+  dt_conclusao : DateTime
+  mensagem_erro : Text
+}
+
+entity "Parceiro" as parceiro {
+  * cnpj_numero : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * cnpj : String
+  * nome : String
+  dt_criacao : DateTime
+  dt_alteracao : DateTime
+}
+
+entity "NotaFiscal" as nota {
+  * id : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * job_origem : FK(JobProcessamento)
+  * parceiro : FK(Parceiro)
+  chave_acesso : String
+  * numero : String
+  * data_emissao : Date
+  * valor_total : Decimal
+}
+
+entity "NotaFiscalItem" as item {
+  * id : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * nota_fiscal : FK(NotaFiscal)
+  * descricao : String
+  * quantidade : Decimal
+  * valor_unitario : Decimal
+  * valor_total : Decimal
+}
+
+entity "LancamentoFinanceiro" as lancamento {
+  * id : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * nota_fiscal : FK(NotaFiscal)
+  * descricao : String
+  * valor : Decimal
+  * clf_tipo : FK(Classificador)
+  * clf_status : FK(Classificador)
+  * data_vencimento : Date
+  data_pagamento : Date
+  dt_criacao : DateTime
+  dt_alteracao : DateTime
+}
+
+entity "Classificador" as classificador {
+  * id : BigInt <<PK>>
+  --
+  * grupo : String
+  * codigo : String
+  * descricao : String
+  ativo : Boolean
+}
+
+entity "Notification" as notification {
+  * id : BigInt <<PK>>
+  --
+  * uuid : UUID
+  * titulo : String
+  * mensagem : Text
+  * tipo : FK(Classificador)
+  * status : FK(Classificador)
+  dt_criacao : DateTime
+  dt_leitura : DateTime
+}
+
+' Relacionamentos
+empresa ||--o{ job : "possui"
+job ||--|| nota : "gera"
+parceiro ||--o{ nota : "emite/recebe"
+nota ||--o{ item : "contém"
+nota ||--|| lancamento : "origina"
+classificador ||--o{ job : "status"
+classificador ||--o{ lancamento : "tipo/status"
+classificador ||--o{ notification : "tipo/status"
+
+' Índices e constraints (como notas)
+note top of nota : **Índices:**\n• idx_ntf_parc_data\n• idx_ntf_parc_num\n\n**Constraints:**\n• uq_ntf_parceiro_numero_when_no_chave
+
+note top of job : **Índices:**\n• hash_arquivo (db_index=True)\n\n**Validações:**\n• Arquivo obrigatório\n• Status obrigatório
+
+note top of lancamento : **Regras:**\n• OneToOne com NotaFiscal\n• Tipo: PAGAR/RECEBER\n• Status: PENDENTE/PAGO/VENCIDO
+
+note top of classificador : **Grupos:**\n• STATUS_JOB\n• TIPO_LANCAMENTO\n• STATUS_LANCAMENTO\n• TIPO_NOTIFICACAO\n• STATUS_NOTIFICACAO
+
+@enduml

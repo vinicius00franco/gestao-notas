@@ -1,0 +1,95 @@
+@startuml IDEF1_FluxoDados
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Sistema de Gestão de Notas - IDEF1 Fluxo de Dados
+
+' Armazenamentos de dados (Data Stores)
+database "D1\nArquivos\nUpload" as D1
+database "D2\nJobs\nProcessamento" as D2
+database "D3\nNotas\nFiscais" as D3
+database "D4\nParceiros" as D4
+database "D5\nLançamentos\nFinanceiros" as D5
+database "D6\nEmpresas" as D6
+database "D7\nClassificadores" as D7
+database "D8\nNotificações" as D8
+
+' Entidades externas
+actor "Usuário\nSistema" as user
+actor "Celery\nWorker" as worker
+actor "LLM\nService" as llm
+actor "Sistema\nNotificação" as notif
+
+' Processos
+circle "P1\nUpload\nNota" as P1
+circle "P2\nValidar\nDados" as P2
+circle "P3\nExtrair\nDados" as P3
+circle "P4\nClassificar\nParceiro" as P4
+circle "P5\nPersistir\nNota" as P5
+circle "P6\nGerar\nLançamento" as P6
+circle "P7\nNotificar\nUsuário" as P7
+
+' Fluxos de dados - Upload e Validação
+user --> P1 : arquivo_nf +\ncnpj_empresa
+P1 --> D1 : salvar_arquivo
+P1 --> D2 : criar_job
+P1 --> P2 : dados_upload
+
+' Fluxos de dados - Validação
+P2 --> D2 : atualizar_status
+P2 --> D7 : consultar_regras
+D7 --> P2 : regras_validacao
+P2 --> P3 : dados_validados
+
+' Fluxos de dados - Extração
+P3 --> D1 : ler_arquivo
+D1 --> P3 : conteudo_arquivo
+P3 --> llm : requisicao_extracao
+llm --> P3 : dados_extraidos
+P3 --> P4 : dados_estruturados
+
+' Fluxos de dados - Classificação
+P4 --> D6 : consultar_empresa
+D6 --> P4 : dados_empresa
+P4 --> D4 : buscar_parceiro
+D4 --> P4 : dados_parceiro
+P4 --> D4 : criar_parceiro
+P4 --> P5 : dados_classificados
+
+' Fluxos de dados - Persistência
+P5 --> D3 : criar_nota_fiscal
+P5 --> D2 : atualizar_job
+P5 --> P6 : nota_criada
+
+' Fluxos de dados - Lançamento Financeiro
+P6 --> D7 : consultar_tipos
+D7 --> P6 : tipos_lancamento
+P6 --> D5 : criar_lancamento
+P6 --> P7 : lancamento_criado
+
+' Fluxos de dados - Notificação
+P7 --> D8 : criar_notificacao
+P7 --> notif : enviar_push
+P7 --> user : notificacao_sucesso
+
+' Fluxos de consulta/relatório
+user --> D3 : consultar_notas
+D3 --> user : lista_notas
+user --> D5 : consultar_financeiro
+D5 --> user : relatorio_financeiro
+
+' Fluxos de monitoramento
+worker --> D2 : processar_job
+D2 --> worker : job_pendente
+worker --> P3 : iniciar_processamento
+
+' Fluxos de erro
+P2 --> D2 : erro_validacao
+P3 --> D2 : erro_extracao
+P5 --> D2 : erro_persistencia
+D2 --> user : status_erro
+
+@enduml

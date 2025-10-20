@@ -1,0 +1,55 @@
+@startuml IDEF0_GestaoNotas_A0
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Sistema de Gestão de Notas Fiscais - IDEF0 (A0)
+
+' Entradas
+cloud "ENTRADAS" as Input {
+  agent "Arquivos de Notas Fiscais\n(PDF, XML, Imagem)" as Input1
+  agent "CNPJ da Empresa" as Input2
+  agent "Dados de Classificação" as Input3
+  agent "Comandos do Usuário" as Input4
+}
+
+' Processo Central
+rectangle "SISTEMA DE GESTÃO\nDE NOTAS FISCAIS\n\nA0" as A0
+
+' Controles
+cloud "CONTROLES" as Control {
+  agent "Regras de Negócio" as Control1
+  agent "Políticas de Validação" as Control2
+  agent "Configurações do Sistema" as Control3
+  agent "Padrões de Classificação" as Control4
+}
+
+' Saídas
+cloud "SAÍDAS" as Output {
+  agent "Notas Fiscais Processadas" as Output1
+  agent "Lançamentos Financeiros" as Output2
+  agent "Relatórios Gerenciais" as Output3
+  agent "Notificações" as Output4
+  agent "Dashboards" as Output5
+}
+
+' Mecanismos
+cloud "MECANISMOS" as Mechanism {
+  agent "Django Framework" as Mech1
+  agent "PostgreSQL Database" as Mech2
+  agent "Celery Workers" as Mech3
+  agent "LLM/OCR Engines" as Mech4
+  agent "RabbitMQ" as Mech5
+  agent "Nginx" as Mech6
+  agent "Grafana/Loki" as Mech7
+}
+
+' Conexões
+Input --> A0
+Control --> A0
+A0 --> Output
+Mechanism --> A0
+
+@enduml

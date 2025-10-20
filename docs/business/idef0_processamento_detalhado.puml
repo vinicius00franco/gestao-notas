@@ -1,0 +1,89 @@
+@startuml IDEF0_ProcessamentoDetalhado
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Processamento de Notas Fiscais - IDEF0 Detalhado (A2)
+
+' Entradas
+agent "Arquivo NF\nCNPJ Empresa\nMetadados" as Input
+
+' Subprocessos
+rectangle "UPLOAD E VALIDAÇÃO\nINICIAL\n\nA2.1" as A21
+rectangle "DETECTAR\nDUPLICATAS\n\nA2.2" as A22
+rectangle "EXTRAIR DADOS\nPOR ESTRATÉGIA\n\nA2.3" as A23
+rectangle "VALIDAR DADOS\nEXTRAÍDOS\n\nA2.4" as A24
+rectangle "CRIAR JOB\nPROCESSAMENTO\n\nA2.5" as A25
+rectangle "PROCESSAR\nASSÍNCRONO\n\nA2.6" as A26
+
+' Controles
+agent "Formatos Aceitos\nTamanho Máximo" as Control21
+agent "Regras Duplicidade\nHash Comparison" as Control22
+agent "Strategy Factory\nConfiguração LLM" as Control23
+agent "Regras Validação\nSchemas Dados" as Control24
+agent "Status Workflow\nClassificadores" as Control25
+agent "Retry Policies\nTimeout Config" as Control26
+
+' Saídas intermediárias
+agent "Hash Arquivo\nMetadados" as Output21
+agent "Status Duplicata\nJob Existente" as Output22
+agent "Dados Estruturados\nConfiança Extração" as Output23
+agent "Dados Validados\nErros Encontrados" as Output24
+agent "Job UUID\nStatus Pendente" as Output25
+agent "Nota Persistida\nLançamento Criado\nNotificações" as Output26
+
+' Saídas de erro
+agent "Erro\nDuplicata" as Error22
+agent "Erro\nValidação" as Error24
+
+' Mecanismos
+agent "Django Forms\nFile Validators" as Mech21
+agent "SHA-256 Hash\nDatabase Query" as Mech22
+agent "PDF Parser\nLLM Chains\nOCR Engine" as Mech23
+agent "Pydantic\nCNPJ Validator" as Mech24
+agent "Django ORM\nTransaction" as Mech25
+agent "Celery Worker\nObserver Pattern" as Mech26
+
+' Fluxo sequencial principal
+Input --> A21
+A21 --> A22 : Arquivo\nValidado
+A22 --> A23 : Sem\nDuplicata
+A23 --> A24 : Dados\nBrutos
+A24 --> A25 : Dados\nValidados
+A25 --> A26 : Job\nCriado
+
+' Controles
+Control21 -down-> A21
+Control22 -down-> A22
+Control23 -down-> A23
+Control24 -down-> A24
+Control25 -down-> A25
+Control26 -down-> A26
+
+' Saídas
+A21 --> Output21
+A22 --> Output22
+A23 --> Output23
+A24 --> Output24
+A25 --> Output25
+A26 --> Output26
+
+' Erros
+A22 --> Error22
+A24 --> Error24
+
+' Mecanismos
+Mech21 -up-> A21
+Mech22 -up-> A22
+Mech23 -up-> A23
+Mech24 -up-> A24
+Mech25 -up-> A25
+Mech26 -up-> A26
+
+' Feedback
+A26 --> A25 : Status Update
+A25 --> A21 : Job Status
+
+@enduml
