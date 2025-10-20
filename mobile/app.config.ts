@@ -7,7 +7,7 @@ const defineConfig = () => ({
   scheme: 'gestaonotas',
   version: '0.1.0',
   orientation: 'portrait',
-  icon: './assets/adaptive-icon.png',
+  icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   splash: {
     "image": "./assets/splash.png",
@@ -29,9 +29,7 @@ const defineConfig = () => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.gestaonotas.mobile',
-    runtimeVersion: {
-      policy: 'appVersion'
-    }
+    runtimeVersion: '1.0.0'
   },
   android: {
     package: 'com.gestaonotas.mobile',
