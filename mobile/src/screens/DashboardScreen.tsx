@@ -64,7 +64,7 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Top 5 Fornecedores Pendente</Text>
+        <Text style={styles.title}>Top 5 Fornecedores Pendentes</Text>
       </View>
       <FlatList
         data={data.top_5_fornecedores_pendentes}
